@@ -1,7 +1,7 @@
 package main
 
-import "fmt"
+import "github.com/KurongTohsaka/chenhai-hugo/internal/cli"
 
 func main() {
-	fmt.Println("Chenhai - 镇海")
+	cli.Execute()
 }
