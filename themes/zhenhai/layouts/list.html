@@ -1,0 +1,6 @@
+{{define "content"}}
+<h1>文章列表</h1>
+{{range .Extra.pages}}
+<article><h2><a href="{{.Permalink}}">{{.Title}}</a></h2></article>
+{{end}}
+{{end}}
