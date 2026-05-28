@@ -14,9 +14,6 @@
     <h2 class="post-card-title"><a href="{{.Permalink}}">{{.Title}}</a></h2>
     <div class="post-card-meta">
       <time datetime="{{.Date.Format "2006-01-02"}}">{{.Date.Format "2006-01-02"}}</time>
-      {{if gt .ReadingTime 0}}
-      <span>· {{.ReadingTime}} min read</span>
-      {{end}}
       {{if .Categories}}
       <span>· in {{range $i, $cat := .Categories}}{{if $i}}, {{end}}<a href="/categories/{{$cat}}/">{{$cat}}</a>{{end}}</span>
       {{end}}

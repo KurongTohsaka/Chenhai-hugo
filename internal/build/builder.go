@@ -171,7 +171,6 @@ func (b *Builder) collectPages() ([]*content.Page, error) {
 			page.Section = parts[0]
 		}
 
-		page.CalcReadingTime()
 		pages = append(pages, page)
 		return nil
 	})

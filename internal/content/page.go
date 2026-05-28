@@ -22,23 +22,11 @@ type Page struct {
 
 	Content     string
 	RawContent  string
-	WordCount   int
-	ReadingTime int
 	IsPage      bool
 
 	FilePath string
 	RelPath  string
 	Section  string
-}
-
-func (p *Page) CalcReadingTime() {
-	if p.WordCount == 0 {
-		p.WordCount = len([]rune(p.RawContent)) / 3
-	}
-	p.ReadingTime = p.WordCount / 400
-	if p.ReadingTime < 1 {
-		p.ReadingTime = 1
-	}
 }
 
 func (p *Page) Permalink() string {
