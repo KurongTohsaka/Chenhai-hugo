@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/KurongTohsaka/chenhai-hugo/internal/content"
@@ -58,6 +59,8 @@ func (b *Builder) collectPages() ([]*content.Page, error) {
 		}
 
 		page.Content = html
+		// Transform mermaid code blocks for Mermaid.js rendering
+		page.Content = transformMermaidBlocks(page.Content)
 		page.FilePath = path
 		page.RelPath = relPath
 
@@ -74,4 +77,10 @@ func (b *Builder) collectPages() ([]*content.Page, error) {
 		return nil, err
 	}
 	return pages, nil
+}
+
+var mermaidBlockRe = regexp.MustCompile(`<pre><code class="language-mermaid">([\s\S]*?)</code></pre>`)
+
+func transformMermaidBlocks(html string) string {
+	return mermaidBlockRe.ReplaceAllString(html, `<pre class="mermaid">$1</pre>`)
 }
