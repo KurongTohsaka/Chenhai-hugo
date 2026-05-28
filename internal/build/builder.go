@@ -219,6 +219,7 @@ func (b *Builder) renderPaginatedListPages(title string, pages []*content.Page, 
 				"pages":     paginator.Pages,
 				"paginator": paginator,
 				"basePath":  basePath,
+				"tagCloud":  site.BuildTagCloud(),
 			},
 		}
 
@@ -248,6 +249,9 @@ func (b *Builder) renderPages(site *index.Site, public string) error {
 			Site:   site,
 			Page:   page,
 			Config: b.cfg,
+			Extra: map[string]interface{}{
+				"tagCloud": site.BuildTagCloud(),
+			},
 		}
 		if err := b.renderToFile(pageData, filepath.Join(outDir, "index.html"), "single.html"); err != nil {
 			return fmt.Errorf("page %q: %w", page.Title, err)
@@ -264,7 +268,7 @@ func (b *Builder) renderTaxonomies(site *index.Site, public string) error {
 		Site:   site,
 		Page:   &content.Page{Title: "Categories"},
 		Config: b.cfg,
-		Extra:  map[string]interface{}{"title": "Categories"},
+		Extra:  map[string]interface{}{"title": "Categories", "tagCloud": site.BuildTagCloud()},
 	}
 	if err := b.renderToFile(catIndexData, filepath.Join(catDir, "index.html"), "taxonomy.html"); err != nil {
 		return fmt.Errorf("categories index: %w", err)
@@ -309,7 +313,7 @@ func (b *Builder) renderArchives(site *index.Site, public string) error {
 		Site:   site,
 		Page:   &content.Page{Title: "Archives"},
 		Config: b.cfg,
-		Extra:  map[string]interface{}{"title": "Archives", "pages": published},
+		Extra:  map[string]interface{}{"title": "Archives", "pages": published, "tagCloud": site.BuildTagCloud()},
 	}
 	return b.renderToFile(archiveData, filepath.Join(archiveDir, "index.html"), "list.html")
 }

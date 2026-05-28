@@ -19,7 +19,7 @@
   {{end}}
 
   {{/* Tag Cloud */}}
-  {{$cloud := .Site.BuildTagCloud}}
+  {{$cloud := .Extra.tagCloud}}
   {{if $cloud}}
   <div class="sidebar-widget">
     <h3 class="sidebar-widget-title">Tags</h3>
