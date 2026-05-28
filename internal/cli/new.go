@@ -68,9 +68,11 @@ var newCmd = &cobra.Command{
 		content := fmt.Sprintf(`---
 title: "%s"
 date: %s
-draft: true
+draft: false
 categories: %s
 tags: %s
+description: ""
+toc: true
 ---
 
 `, title, now, catList, tagList)
