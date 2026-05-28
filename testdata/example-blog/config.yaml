@@ -1,0 +1,43 @@
+title: "镇海阁"
+subtitle: "读书、记事、静观沧海"
+description: "一个安静写字的地方"
+baseURL: "https://example.com"
+language: "zh-CN"
+copyright: "CC BY-NC-SA 4.0"
+author:
+  name: "指挥官"
+  avatar: "/images/avatar.webp"
+theme: "zhenhai"
+themeConfig:
+  colorMode: "auto"
+  showToc: true
+  tocFloat: true
+  codeTheme: "github-dark"
+  dateFormat: "2006-01-02"
+  postsPerPage: 10
+menu:
+  - name: "首页"
+    url: "/"
+  - name: "归档"
+    url: "/archives/"
+  - name: "标签"
+    url: "/tags/"
+  - name: "关于"
+    url: "/about/"
+markup:
+  highlight:
+    style: "github-dark"
+    lineNumbers: true
+    showFilename: true
+  math:
+    engine: "katex"
+  mermaid: true
+  toc:
+    minDepth: 2
+    maxDepth: 4
+social:
+  github: "https://github.com/KurongTohsaka"
+  email: "kurong@example.com"
+seo:
+  enableRobotsTXT: true
+  enableSitemap: true
