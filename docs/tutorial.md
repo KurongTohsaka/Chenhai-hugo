@@ -1,6 +1,6 @@
 # Chenhai 使用教程
 
-本文档将带你从零开始，完成一个博客站点的创建、写作、预览和发布。
+本文档带你从零开始，完成一个博客站点的创建、写作、预览和发布。
 
 ## 目录
 
@@ -12,7 +12,8 @@
 - [6. 构建与部署](#6-构建与部署)
 - [7. 主题自定义](#7-主题自定义)
 - [8. Markdown 写作指南](#8-markdown-写作指南)
-- [9. Front Matter 参考](#9-front-matter-参考)
+- [9. 图床配置](#9-图床配置)
+- [10. Front Matter 参考](#10-front-matter-参考)
 
 ---
 
@@ -116,7 +117,7 @@ seo:
   enableSitemap: true
 ```
 
-**默认值**：所有配置项都有合理默认值。最简 `config.yaml` 只需 `title` 即可运行。
+**默认值**：所有配置项都有合理默认值，最简只需填 `title`。
 
 ## 4. 写文章
 
@@ -126,54 +127,24 @@ seo:
 chenhai new posts/hello-world.md
 ```
 
-这会自动创建文件并填充默认 Front Matter：
-
-```markdown
----
-title: "hello-world"
-date: 2026-05-28
-draft: true
-categories: []
-tags: []
----
-
-```
-
 ### 手动创建
 
-直接在 `content/posts/` 下创建 `.md` 文件：
+在 `content/posts/` 下创建 `.md` 文件：
 
 ```markdown
 ---
 title: "我的第一篇博客文章"
 date: 2026-05-28
-categories: ["生活"]
+categories: ["技术"]
 tags: ["博客", "Chenhai"]
-description: "使用 Chenhai 写的第一篇文章"
 toc: true
 ---
 
-## 缘起
+## 正文开始
 
-今天开始了我的博客之旅。使用自制的静态博客生成器。
+这里写你的内容。
 
-## 代码示例
-
-```go
-package main
-
-import "fmt"
-
-func main() {
-    fmt.Println("Hello, Chenhai!")
-}
-```
-
-## 数学公式
-
-$E = mc^2$
-
-这就是我的第一篇博客。
+![配图](/images/photo.webp "图注文字")
 ```
 
 ### 独立页面
@@ -182,17 +153,7 @@ $E = mc^2$
 
 ```
 content/about/
-└── index.md            ← 关于页面
-```
-
-Front Matter 中设置 `url` 可自定义访问路径：
-
-```yaml
----
-title: "关于我"
-date: 2026-05-01
-url: "/about/"
----
+└── index.md            ← /about/ 独立页面
 ```
 
 ## 5. 预览
@@ -201,11 +162,7 @@ url: "/about/"
 chenhai serve
 ```
 
-打开浏览器访问 `http://localhost:1313`。
-
-修改内容后自动重建并推送 LiveReload 到浏览器。
-
-可选参数：
+打开 `http://localhost:1313`。修改内容后自动重建并推送 LiveReload。
 
 ```bash
 chenhai serve --port 8080    # 自定义端口
@@ -219,89 +176,60 @@ chenhai serve --port 8080    # 自定义端口
 chenhai build
 ```
 
-输出到 `public/` 目录：
+输出到 `public/` 目录的纯静态文件：
 
 ```
 public/
 ├── index.html             ← 首页
-├── posts/
-│   └── hello-world/
-│       └── index.html     ← 文章页
-├── categories/
-│   └── 生活/
-│       └── index.html     ← 分类页
-├── tags/
-│   ├── index.html         ← 标签云
-│   └── 博客/
-│       └── index.html     ← 标签页
-├── archives/
-│   └── index.html         ← 时间线归档
+├── posts/                 ← 文章页
+├── categories/            ← 分类聚合页
+├── tags/                  ← 标签云 + 标签页
+├── archives/              ← 时间线归档
+├── about/                 ← 独立页面
 ├── search-index.json      ← 搜索索引
 ├── sitemap.xml
 ├── robots.txt
+├── favicon.svg
 └── assets/                ← 主题静态资源
-    ├── css/
-    └── js/
 ```
 
 ### 部署
 
-`public/` 目录是纯静态文件，可直接部署到任何静态托管服务：
-
-**GitHub Pages**：
-
-```bash
-# 将 public/ 推送到 gh-pages 分支
-cd public
-git init
-git add -A
-git commit -m "deploy"
-git push -f git@github.com:yourname/yourname.github.io.git main
-```
-
-**Nginx**：将 `public/` 指向 Nginx 的 `root` 即可。
-
-**Cloudflare Pages / Vercel / Netlify**：构建命令设为 `chenhai build`，输出目录设为 `public`。
+Nginx / GitHub Pages / Cloudflare Pages / Vercel / Netlify 均可。构建命令 `chenhai build`，输出目录 `public`。
 
 ## 7. 主题自定义
 
 ### 覆盖模板
 
-在站点根目录创建 `layouts/` 目录，放入与内置主题同名的文件即可覆盖。
-
-例如，自定义头部导航：
+在站点根目录创建 `layouts/`，放入与内置主题同名的文件即可覆盖：
 
 ```bash
 mkdir -p layouts/partials
 ```
 
-创建 `layouts/partials/header.html`：
+例如自定义头部 `layouts/partials/header.html`：
 
 ```html
 {{define "header"}}
 <header class="site-header">
   <a class="site-brand" href="/">{{.Config.Title}}</a>
   <nav>
-    <a href="/">首页</a>
-    <a href="/about/">关于</a>
+    {{range .Config.Menu}}
+    <a href="{{.URL}}">{{.Name}}</a>
+    {{end}}
   </nav>
-  <!-- 暗色模式切换 -->
-  <button id="theme-toggle" aria-label="Toggle dark mode">☾</button>
+  <button id="theme-toggle">☾</button>
 </header>
 {{end}}
 ```
 
-### 覆盖静态资源
+### 替换主题图片
 
-在 `static/` 目录下放置文件，构建时会直接复制到 `public/` 根目录。
+站点根目录 `static/` 下的文件会直接复制到 `public/`，可覆盖主题内置文件。
 
-```bash
-static/
-├── images/
-│   └── avatar.webp
-├── favicon.ico
-└── CNAME                ← GitHub Pages 自定义域名
-```
+镇海角色图片位于主题 `assets/images/`，站点内引用路径为 `/assets/images/`。替换同名 webp/png 即可换图：
+- `/assets/images/hero.svg` — 首页头图
+- `/assets/images/about-zhenhai.svg` — 关于页角色图
 
 ### 主题优先级
 
@@ -309,29 +237,17 @@ static/
 站点 layouts/ > 外部主题目录 > 内置镇海主题
 ```
 
-未覆盖的部分自动回退到镇海主题，无需从零开始写整个主题。
-
 ## 8. Markdown 写作指南
 
-### 文本格式
+### 基础格式
 
 ```markdown
 **粗体** | *斜体* | ~~删除线~~ | `行内代码`
 ```
 
-### 标题
-
-```markdown
-## 二级标题
-### 三级标题
-#### 四级标题
-```
-
-标题会自动生成 ID，用于 TOC 目录链接。
-
 ### 代码块
 
-使用三个反引号包裹，指定语言：
+使用三个反引号包裹，指定语言即可触发 Chroma 语法高亮：
 
 ````markdown
 ```python
@@ -340,18 +256,15 @@ def hello():
 ```
 ````
 
-可选地在第一行标注文件名：
+代码块自带 **Copy 按钮**，点击复制代码到剪贴板。
 
-````markdown
-```go filename="main.go"
-package main
-func main() { fmt.Println("Hi") }
+### 数学公式（KaTeX）
+
+行内公式：
+
+```markdown
+$E = mc^2$
 ```
-````
-
-### 数学公式
-
-行内公式：`$E = mc^2$`
 
 块级公式：
 
@@ -361,15 +274,22 @@ $$
 $$
 ```
 
+页面包含数学公式时会**自动注入 KaTeX JS/CSS**（CDN），无需额外配置。
+
 ### Mermaid 图表
+
+使用 `mermaid` 语言标记的代码块：
 
 ````markdown
 ```mermaid
 graph TD
-    A[Markdown] --> B[HTML]
-    B --> C[Static Site]
+    A[Markdown] --> B[Goldmark]
+    B --> C[HTML]
+    C --> D[Static Site]
 ```
 ````
+
+页面包含 Mermaid 代码块时会**自动注入 Mermaid.js**（CDN），渲染为 SVG 矢量图表。
 
 ### 表格
 
@@ -403,6 +323,8 @@ graph TD
 > 这是一个危险警告。
 ```
 
+四种类型分别渲染为对应的样式化容器（笔记/注意/提示/危险）。
+
 ### 脚注
 
 ```markdown
@@ -411,55 +333,98 @@ Hugo[^1] 是一个流行的静态博客生成器。
 [^1]: Hugo 由 Steve Francia 创立，使用 Go 编写。
 ```
 
-### 图片与媒体
+### 图片
 
 ```markdown
-![图片描述](/images/photo.webp "图片标题")
-
-<video src="/videos/demo.mp4" controls></video>
+![镇海](/images/zhenhai.webp "我的秘书舰")
 ```
 
-## 9. Front Matter 参考
+图片会自动包裹 `<figure>` + `<figcaption>`，添加 `loading="lazy"` 懒加载。支持对齐：
 
-每篇 Markdown 文件头部的 `---` 包裹区域，用于定义文章元数据。
+```markdown
+![镇海 |center](/images/zhenhai.webp)   # 居中
+![镇海 |right](/images/zhenhai.webp)    # 右对齐
+```
+
+### 音频 & 视频
+
+```markdown
+<video src="/videos/demo.mp4" controls></video>
+<audio src="/audio/podcast.mp3" controls></audio>
+```
+
+## 9. 图床配置
+
+支持 GitHub 仓库作为图片托管。在 `config.yaml` 中配置：
+
+```yaml
+imageHost:
+  enabled: true
+  provider: "github"
+  repo: "yourname/images"
+  branch: "main"
+  basePath: "images/"
+  token: ""                 # 或设置环境变量 CHENHAI_IMG_TOKEN
+  mode: "auto"              # auto | map
+  baseURL: ""               # map 模式下的自定义 URL 前缀
+```
+
+### auto 模式
+
+构建时自动将本地相对路径图片通过 GitHub API 上传到指定仓库，并将 Markdown 中的路径替换为 `https://raw.githubusercontent.com/...` CDN URL。
+
+- 同名同 hash 图片跳过重复上传
+- 上传失败不阻断构建，保留原始路径
+
+### map 模式
+
+仅做路径映射，不上传。适合图片已手动上传好的场景。将本地路径替换为 `{baseURL}/{filename}`。
+
+### 环境变量
+
+GitHub Token 可通过环境变量 `CHENHAI_IMG_TOKEN` 设置，避免写入配置文件。
+
+## 10. Front Matter 参考
 
 ### 完整字段
 
 ```yaml
 ---
 # 基础信息
-title: "文章标题"           # 必填
-date: 2026-05-28            # 必填，支持 2006-01-02 / ISO 8601
-lastmod: 2026-06-01         # 最后修改日期
-draft: true                 # 草稿（不生成页面）
+title: "文章标题"             # 必填
+date: 2026-05-28              # 必填，支持日期格式 + ISO 8601
+lastmod: 2026-06-01           # 最后修改日期
+draft: true                   # 草稿（构建时不生成页面）
 
 # 分类与标签
-categories: ["技术", "Go"]  # 层级分类
-tags: ["静态博客", "Go"]     # 多个标签
+categories: ["技术", "Go"]    # 层级分类
+tags: ["静态博客", "Go"]       # 多个标签
 
 # URL 控制
-slug: "custom-url"          # 自定义 URL 标识符
-url: "/special/path/"       # 完全自定义路径
-weight: 5                   # 排序权重（越小越靠前）
+slug: "custom-url"            # 自定义 URL 标识符
+url: "/special/path/"         # 完全自定义路径
+weight: 5                     # 排序权重（越小越靠前）
 
 # 展示控制
-description: "SEO 描述"      # meta description
-summary: "文章摘要"           # 列表页摘要（不填则自动截取）
-toc: true                   # 是否生成目录（覆盖站点设置）
-math: false                 # 是否启用数学公式（覆盖站点设置）
+description: "SEO 描述"        # meta description
+summary: "文章摘要"             # 列表页摘要（不填则自动截取）
+toc: true                     # 是否生成目录
+math: false                   # 是否启用数学公式
 ---
 ```
 
-### 字段优先级
+### 优先级
 
-对于 URL 生成：`url` > `slug` > 文件路径
+```
+Front Matter > config.yaml > 内建默认值
+```
 
-对于配置项：`Front Matter` > `config.yaml` > 内建默认值
+URL 生成优先级：`url` > `slug` > 文件路径
 
 ---
 
 ## 下一步
 
-- 阅读 [规划文档](planning.md) 了解当前进展和后续计划
-- 探索 [规格文档](superpowers/specs/) 了解详细设计
-- 查看 [示例博客](../testdata/example-blog/) 获取完整参考
+- 阅读[规划文档](planning.md)了解当前进展和后续计划
+- 探索[规格文档](superpowers/specs/)了解详细设计
+- 查看[示例博客](../testdata/example-blog/)获取完整参考
