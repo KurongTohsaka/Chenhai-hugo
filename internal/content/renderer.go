@@ -11,6 +11,7 @@ import (
 	"github.com/yuin/goldmark/extension"
 	"github.com/yuin/goldmark/parser"
 	"github.com/yuin/goldmark/renderer/html"
+	chromahtml "github.com/alecthomas/chroma/v2/formatters/html"
 )
 
 type Renderer struct {
@@ -28,6 +29,9 @@ func NewRenderer(style string) *Renderer {
 			extension.Typographer, // smart quotes, dashes, ellipses
 			highlighting.NewHighlighting(
 				highlighting.WithStyle(style),
+				highlighting.WithFormatOptions(
+					chromahtml.WithClasses(true),
+				),
 			),
 			mathjax.NewMathJax(
 				mathjax.WithInlineDelim("$", "$"),
