@@ -1,3 +1,37 @@
 {{define "content"}}
-<h1>{{.Extra.title}}</h1>
+<div class="page-header">
+  <h1 class="page-title">{{.Extra.title}}</h1>
+</div>
+
+{{if eq .Extra.title "Tags"}}
+  {{/* Tag cloud */}}
+  {{$cloud := .Site.BuildTagCloud}}
+  {{if $cloud}}
+  <div class="tag-cloud">
+    {{range $cloud}}
+    <a class="tag-cloud-item tag-size-{{.Size}}" href="/tags/{{.Name}}/">{{.Name}} <small>({{.Count}})</small></a>
+    {{end}}
+  </div>
+  {{else}}
+  <p style="color: var(--color-text-secondary);">No tags yet.</p>
+  {{end}}
+{{else if eq .Extra.title "Categories"}}
+  {{/* Category list with counts */}}
+  {{$cats := .Site.Categories}}
+  {{if $cats}}
+  <ul class="category-list">
+    {{range $cat, $pages := $cats}}
+    <li>
+      <a href="/categories/{{$cat}}/">{{$cat}}</a>
+      <span class="category-count">{{len $pages}}</span>
+    </li>
+    {{end}}
+  </ul>
+  {{else}}
+  <p style="color: var(--color-text-secondary);">No categories yet.</p>
+  {{end}}
+{{else}}
+  {{/* Fallback for any other taxonomy index */}}
+  <p style="color: var(--color-text-secondary);">Taxonomy index page.</p>
+{{end}}
 {{end}}

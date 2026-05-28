@@ -1,3 +1,62 @@
 {{define "content"}}
-<article><h1>{{.Page.Title}}</h1>{{.Page.Content | safeHTML}}</article>
+{{template "toc" .}}
+
+<article class="article-content">
+  <header class="article-header">
+    <h1 class="article-title">{{.Page.Title}}</h1>
+    <div class="article-meta">
+      <time datetime="{{.Page.Date.Format "2006-01-02"}}">{{.Page.Date.Format "2006-01-02"}}</time>
+      <span class="separator">|</span>
+      <span>{{.Page.ReadingTime}} min read</span>
+      {{if .Page.Categories}}
+      <span class="separator">|</span>
+      <span>in {{range $i, $cat := .Page.Categories}}{{if $i}}, {{end}}<a href="/categories/{{$cat}}/">{{$cat}}</a>{{end}}</span>
+      {{end}}
+    </div>
+    {{if .Page.Tags}}
+    <div class="post-card-tags" style="margin-top: 0.6rem;">
+      {{range .Page.Tags}}
+      <a class="tag" href="/tags/{{.}}/">{{.}}</a>
+      {{end}}
+    </div>
+    {{end}}
+  </header>
+
+  {{.Page.Content | safeHTML}}
+</article>
+
+<!-- Prev/Next Post Navigation -->
+{{$pages := .Site.PublishedPages}}
+{{$prev := ""}}
+{{$next := ""}}
+{{$found := false}}
+{{range $pages}}
+  {{if $found}}
+    {{if not $next}}{{$next = .}}{{end}}
+  {{end}}
+  {{if eq .Permalink $.Page.Permalink}}
+    {{$found = true}}
+  {{else}}
+    {{if not $found}}{{$prev = .}}{{end}}
+  {{end}}
+{{end}}
+
+{{if or $prev $next}}
+<nav class="post-nav">
+  {{if $prev}}
+  <a class="post-nav-link prev" href="{{$prev.Permalink}}">
+    <span class="post-nav-label">Previous</span>
+    <span class="post-nav-title">{{$prev.Title}}</span>
+  </a>
+  {{else}}
+  <div></div>
+  {{end}}
+  {{if $next}}
+  <a class="post-nav-link next" href="{{$next.Permalink}}">
+    <span class="post-nav-label">Next</span>
+    <span class="post-nav-title">{{$next.Title}}</span>
+  </a>
+  {{end}}
+</nav>
+{{end}}
 {{end}}

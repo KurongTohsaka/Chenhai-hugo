@@ -1,3 +1,42 @@
 {{define "content"}}
-<h1>{{.Config.Title}}</h1>
+<div class="site-hero">
+  <h1 class="site-hero-title">{{.Config.Title}}</h1>
+  {{if .Config.Subtitle}}
+  <p class="site-hero-subtitle">{{.Config.Subtitle}}</p>
+  {{end}}
+</div>
+
+{{$pages := .Extra.pages}}
+{{if $pages}}
+<ul class="post-cards">
+  {{range $pages}}
+  <li class="post-card">
+    <h2 class="post-card-title"><a href="{{.Permalink}}">{{.Title}}</a></h2>
+    <div class="post-card-meta">
+      <time datetime="{{.Date.Format "2006-01-02"}}">{{.Date.Format "2006-01-02"}}</time>
+      {{if gt .ReadingTime 0}}
+      <span>· {{.ReadingTime}} min read</span>
+      {{end}}
+      {{if .Categories}}
+      <span>· in {{range $i, $cat := .Categories}}{{if $i}}, {{end}}<a href="/categories/{{$cat}}/">{{$cat}}</a>{{end}}</span>
+      {{end}}
+    </div>
+    {{if .Summary}}
+    <div class="post-card-summary">{{.Summary | safeHTML}}</div>
+    {{end}}
+    {{if .Tags}}
+    <div class="post-card-tags">
+      {{range .Tags}}
+      <a class="tag" href="/tags/{{.}}/">{{.}}</a>
+      {{end}}
+    </div>
+    {{end}}
+  </li>
+  {{end}}
+</ul>
+
+{{template "pagination" .}}
+{{else}}
+<p class="text-center" style="color: var(--color-text-secondary); padding: 3rem 0;">No posts yet.</p>
+{{end}}
 {{end}}

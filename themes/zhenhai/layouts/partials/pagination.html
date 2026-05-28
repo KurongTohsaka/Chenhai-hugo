@@ -1,1 +1,12 @@
-{{define "pagination"}}{{end}}
+{{define "pagination"}}
+{{$pages := .Extra.pages}}
+{{$total := len $pages}}
+{{$perPage := .Config.ThemeConfig.PostsPerPage}}
+{{if gt $total $perPage}}
+<nav class="pagination">
+  <div></div>
+  <div class="pagination-info">Page 1</div>
+  <div></div>
+</nav>
+{{end}}
+{{end}}

@@ -1,1 +1,8 @@
-{{define "toc"}}{{end}}
+{{define "toc"}}
+{{if .Config.ThemeConfig.ShowToc}}
+<nav id="floating-toc" class="floating-toc">
+  <div class="floating-toc-title">Contents</div>
+  <ul class="floating-toc-list" id="floating-toc-list"></ul>
+</nav>
+{{end}}
+{{end}}

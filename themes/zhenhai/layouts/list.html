@@ -1,6 +1,57 @@
 {{define "content"}}
-<h1>文章列表</h1>
-{{range .Extra.pages}}
-<article><h2><a href="{{.Permalink}}">{{.Title}}</a></h2></article>
+<div class="page-header">
+  <h1 class="page-title">{{.Extra.title}}</h1>
+</div>
+
+{{if eq .Extra.title "Archives"}}
+  {{/* Render archive timeline */}}
+  {{$archives := .Site.Archives}}
+  <div class="archive-timeline">
+    {{range $archives.Years}}
+    {{$year := .}}
+    {{$months := index $archives.Items $year}}
+    <div class="archive-year">
+      <div class="archive-year-marker">
+        <span class="archive-year-title">{{$year}}</span>
+        <span class="archive-year-toggle">[-]</span>
+      </div>
+      <div class="archive-months">
+        {{range $month, $monthPages := $months}}
+        <div class="archive-month">
+          <div class="archive-month-header">
+            <span class="archive-month-title">{{printf "%d" $month}}月</span>
+          </div>
+          <ul class="archive-month-posts">
+            {{range $monthPages}}
+            <li class="archive-month-post">
+              <a href="{{.Permalink}}">
+                <span>{{.Title}}</span>
+                <span class="archive-post-date">{{.Date.Format "01-02"}}</span>
+              </a>
+            </li>
+            {{end}}
+          </ul>
+        </div>
+        {{end}}
+      </div>
+    </div>
+    {{end}}
+  </div>
+{{else}}
+  {{/* Standard list: posts with dates */}}
+  {{$pages := .Extra.pages}}
+  {{if $pages}}
+  <ul class="item-list">
+    {{range $pages}}
+    <li>
+      <span class="item-list-title"><a href="{{.Permalink}}">{{.Title}}</a></span>
+      <span class="item-list-date">{{.Date.Format "2006-01-02"}}</span>
+    </li>
+    {{end}}
+  </ul>
+  {{template "pagination" .}}
+  {{else}}
+  <p style="color: var(--color-text-secondary);">No posts in this section.</p>
+  {{end}}
 {{end}}
 {{end}}

@@ -1,1 +1,34 @@
-{{define "sidebar"}}{{end}}
+{{define "sidebar"}}
+<aside class="sidebar-area">
+  {{/* Recent Posts */}}
+  {{$recent := .Site.PublishedPages}}
+  {{if $recent}}
+  <div class="sidebar-widget">
+    <h3 class="sidebar-widget-title">Recent Posts</h3>
+    <ul class="sidebar-post-list">
+      {{range $i, $p := $recent}}
+      {{if lt $i 5}}
+      <li class="sidebar-post-item">
+        <a href="{{$p.Permalink}}">{{$p.Title}}</a>
+        <span class="sidebar-post-date">{{$p.Date.Format "2006-01-02"}}</span>
+      </li>
+      {{end}}
+      {{end}}
+    </ul>
+  </div>
+  {{end}}
+
+  {{/* Tag Cloud */}}
+  {{$cloud := .Site.BuildTagCloud}}
+  {{if $cloud}}
+  <div class="sidebar-widget">
+    <h3 class="sidebar-widget-title">Tags</h3>
+    <div class="sidebar-tag-list">
+      {{range $cloud}}
+      <a class="sidebar-tag" href="/tags/{{.Name}}/">{{.Name}}</a>
+      {{end}}
+    </div>
+  </div>
+  {{end}}
+</aside>
+{{end}}

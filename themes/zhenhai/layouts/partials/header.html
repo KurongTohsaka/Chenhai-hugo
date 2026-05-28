@@ -1,3 +1,19 @@
 {{define "header"}}
-<header><nav>{{range .Config.Menu}}<a href="{{.URL}}">{{.Name}}</a>{{end}}</nav></header>
+<header class="site-header">
+  <div class="header-inner">
+    <a class="site-brand" href="/">{{.Config.Title}}</a>
+
+    <nav class="header-nav">
+      {{range .Config.Menu}}
+      <a href="{{.URL}}">{{.Name}}</a>
+      {{end}}
+    </nav>
+
+    <div class="header-actions">
+      <button class="header-btn search-open-btn" aria-label="Search" title="Search (Ctrl+K)">&#128269;</button>
+      <button class="header-btn theme-toggle-btn" aria-label="Toggle dark mode" title="Toggle theme">&#9790;</button>
+      <button id="hamburger-btn" class="header-btn hamburger-btn" aria-label="Menu">&#9776;</button>
+    </div>
+  </div>
+</header>
 {{end}}

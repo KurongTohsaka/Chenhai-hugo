@@ -1,1 +1,22 @@
-{{define "footer"}}<footer>&copy; {{.Config.Copyright}}</footer>{{end}}
+{{define "footer"}}
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-copyright">
+      &copy; {{.Config.Copyright}}
+      {{if .Config.Author.Name}} by {{.Config.Author.Name}}{{end}}
+    </div>
+    <div class="footer-social">
+      {{if .Config.Social.GitHub}}
+      <a href="https://github.com/{{.Config.Social.GitHub}}" target="_blank" rel="noopener">GitHub</a>
+      {{end}}
+      {{if .Config.Social.Twitter}}
+      <a href="https://twitter.com/{{.Config.Social.Twitter}}" target="_blank" rel="noopener">Twitter</a>
+      {{end}}
+      {{if .Config.Social.Email}}
+      <a href="mailto:{{.Config.Social.Email}}">Email</a>
+      {{end}}
+    </div>
+    <div class="footer-badge">Powered by Chenhai &middot; Zhenhai</div>
+  </div>
+</footer>
+{{end}}

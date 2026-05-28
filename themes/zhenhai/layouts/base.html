@@ -1,11 +1,70 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="{{.Config.Language}}">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{{.Page.Title}} - {{.Config.Title}}</title>
+<meta name="description" content="{{.Config.Description}}">
+<meta name="theme-color" content="#f7f4ef">
+<meta name="color-scheme" content="light dark">
+<title>{{.Page.Title}}{{if ne .Page.Title .Config.Title}} - {{.Config.Title}}{{end}}</title>
+
+<link rel="stylesheet" href="/assets/css/style.css">
+
+{{if .Config.SEO.GoogleAnalytics}}
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id={{.Config.SEO.GoogleAnalytics}}"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', '{{.Config.SEO.GoogleAnalytics}}');
+</script>
+{{end}}
 </head>
 <body>
-{{template "content" .}}
+
+{{template "header" .}}
+
+<!-- Reading Progress Bar -->
+<div id="reading-progress-bar" class="reading-progress-bar"></div>
+
+<!-- Mobile Menu Overlay -->
+<div id="mobile-menu-overlay" class="mobile-menu-overlay"></div>
+<div id="mobile-menu-panel" class="mobile-menu-panel">
+  <button id="mobile-menu-close" class="mobile-menu-close" aria-label="Close menu">&times;</button>
+  <nav class="mobile-menu-nav">
+    {{range .Config.Menu}}
+    <a href="{{.URL}}">{{.Name}}</a>
+    {{end}}
+  </nav>
+</div>
+
+<!-- Search Overlay & Modal -->
+<div id="search-overlay" class="search-overlay"></div>
+<div id="search-modal" class="search-modal">
+  <div class="search-modal-header">
+    <span class="search-modal-icon">&#128269;</span>
+    <div class="search-modal-input-wrap">
+      <input id="search-input" class="search-modal-input" type="text" placeholder="Enter keyword to search..." autocomplete="off" autocorrect="off" spellcheck="false">
+    </div>
+    <span class="search-modal-hint">Ctrl+K</span>
+    <button id="search-modal-close" class="search-modal-close" aria-label="Close search">&times;</button>
+  </div>
+  <div id="search-results" class="search-results">
+    <div class="search-empty">Enter keyword to search...</div>
+  </div>
+</div>
+
+<main class="page-main">
+  <div class="content-area">
+    {{template "content" .}}
+  </div>
+  {{template "sidebar" .}}
+</main>
+
+{{template "footer" .}}
+
+<script src="/assets/js/main.js"></script>
+<script src="/assets/js/search.js"></script>
 </body>
 </html>
