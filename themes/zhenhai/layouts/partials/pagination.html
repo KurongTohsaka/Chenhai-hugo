@@ -1,12 +1,18 @@
 {{define "pagination"}}
-{{$pages := .Extra.pages}}
-{{$total := len $pages}}
-{{$perPage := .Config.ThemeConfig.PostsPerPage}}
-{{if gt $total $perPage}}
+{{if .Extra.paginator}}
+{{$p := .Extra.paginator}}
+{{$base := ""}}
+{{if .Extra.basePath}}{{$base = .Extra.basePath}}{{end}}
+{{if or $p.HasPrev $p.HasNext}}
 <nav class="pagination">
-  <div></div>
-  <div class="pagination-info">Page 1</div>
-  <div></div>
+  {{if $p.HasPrev}}
+  <a class="prev" href="{{if eq $p.PrevPage 1}}{{$base}}/{{else}}{{$base}}/page/{{$p.PrevPage}}/{{end}}">← 上一页</a>
+  {{end}}
+  <span class="page-info">{{$p.PageNumber}} / {{$p.TotalPages}}</span>
+  {{if $p.HasNext}}
+  <a class="next" href="{{$base}}/page/{{$p.NextPage}}/">下一页 →</a>
+  {{end}}
 </nav>
+{{end}}
 {{end}}
 {{end}}

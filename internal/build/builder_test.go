@@ -2,6 +2,7 @@ package build_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -344,6 +345,170 @@ This is published.
 	}
 	if entries[0]["title"] != "Published Post" {
 		t.Errorf("expected search entry 'Published Post', got %v", entries[0]["title"])
+	}
+}
+
+func TestBuild_Pagination(t *testing.T) {
+	root := t.TempDir()
+
+	// Create config with postsPerPage=1
+	cfgYAML := []byte(`title: "Pagination Test"
+baseURL: "https://example.com"
+themeConfig:
+  postsPerPage: 1
+`)
+	if err := os.WriteFile(filepath.Join(root, "config.yaml"), cfgYAML, 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	// Create content directory
+	postsDir := filepath.Join(root, "content", "posts")
+	if err := os.MkdirAll(postsDir, 0755); err != nil {
+		t.Fatal(err)
+	}
+
+	// Create 3 published posts, all in same category/tag for taxonomy pagination test
+	for i, title := range []string{"Post One", "Post Two", "Post Three"} {
+		postMD := []byte(fmt.Sprintf(`---
+title: "%s"
+date: "2024-01-%02d"
+categories: ["Demo"]
+tags: ["pagination"]
+---
+
+Content for %s.
+`, title, 15-i, title))
+		if err := os.WriteFile(filepath.Join(postsDir, fmt.Sprintf("post-%d.md", i+1)), postMD, 0644); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	cfg, err := config.Load(filepath.Join(root, "config.yaml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	renderer := content.NewRenderer()
+	engine, err := theme.New(cfg, root)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	builder := build.New(cfg, root, renderer, engine)
+	if err := builder.Build(); err != nil {
+		t.Fatal(err)
+	}
+
+	public := filepath.Join(root, "public")
+
+	// --- Homepage pagination ---
+	// Page 1 should exist and show first page of paginated data
+	page1Path := filepath.Join(public, "index.html")
+	page1Content, err := os.ReadFile(page1Path)
+	if err != nil {
+		t.Fatal("homepage page 1 (public/index.html) was not generated:", err)
+	}
+	if !strings.Contains(string(page1Content), "1 / 3") {
+		t.Error("homepage page 1 should show '1 / 3' (page number / total pages)")
+	}
+	// Page 1 should have "next" link but no "prev"
+	if !strings.Contains(string(page1Content), "下一页") {
+		t.Error("homepage page 1 should have next page link")
+	}
+	if strings.Contains(string(page1Content), "上一页") {
+		t.Error("homepage page 1 should NOT have previous page link")
+	}
+	// Page 1 should show the most recent post (Post One with date 2024-01-14)
+	// The post title appears in the post-cards list <a href="/posts/post-1/">Post One</a>
+	if !strings.Contains(string(page1Content), "Post One") {
+		t.Error("homepage page 1 should show 'Post One'")
+	}
+	// Check that Post Two does NOT appear in the post cards section
+	// (it may appear in sidebar "Recent Posts" which is expected)
+	postCardsSection := string(page1Content)
+	if idx := strings.Index(postCardsSection, `<ul class="post-cards">`); idx >= 0 {
+		if endIdx := strings.Index(postCardsSection[idx:], `</ul>`); endIdx >= 0 {
+			postCardsSection = postCardsSection[idx : idx+endIdx+5]
+		}
+	}
+	if strings.Contains(postCardsSection, "Post Two") {
+		t.Error("homepage page 1 post cards should NOT contain 'Post Two'")
+	}
+
+	// Page 2 should exist
+	page2Path := filepath.Join(public, "page", "2", "index.html")
+	page2Content, err := os.ReadFile(page2Path)
+	if err != nil {
+		t.Fatal("homepage page 2 (public/page/2/index.html) was not generated:", err)
+	}
+	if !strings.Contains(string(page2Content), "2 / 3") {
+		t.Error("homepage page 2 should show '2 / 3'")
+	}
+	if !strings.Contains(string(page2Content), "上一页") {
+		t.Error("homepage page 2 should have previous page link")
+	}
+	if !strings.Contains(string(page2Content), "下一页") {
+		t.Error("homepage page 2 should have next page link")
+	}
+	if !strings.Contains(string(page2Content), "Post Two") {
+		t.Error("homepage page 2 should show 'Post Two'")
+	}
+
+	// Page 3 should exist
+	page3Path := filepath.Join(public, "page", "3", "index.html")
+	page3Content, err := os.ReadFile(page3Path)
+	if err != nil {
+		t.Fatal("homepage page 3 (public/page/3/index.html) was not generated:", err)
+	}
+	if !strings.Contains(string(page3Content), "3 / 3") {
+		t.Error("homepage page 3 should show '3 / 3'")
+	}
+	if !strings.Contains(string(page3Content), "上一页") {
+		t.Error("homepage page 3 should have previous page link")
+	}
+	if strings.Contains(string(page3Content), "下一页") {
+		t.Error("homepage page 3 should NOT have next page link")
+	}
+	if !strings.Contains(string(page3Content), "Post Three") {
+		t.Error("homepage page 3 should show 'Post Three'")
+	}
+
+	// --- Category pagination ---
+	catPage1Path := filepath.Join(public, "categories", "Demo", "index.html")
+	catPage1Content, err := os.ReadFile(catPage1Path)
+	if err != nil {
+		t.Fatal("category page 1 (categories/Demo/index.html) was not generated:", err)
+	}
+	if !strings.Contains(string(catPage1Content), "1 / 3") {
+		t.Error("category page 1 should show '1 / 3'")
+	}
+
+	catPage2Path := filepath.Join(public, "categories", "Demo", "page", "2", "index.html")
+	if _, err := os.Stat(catPage2Path); os.IsNotExist(err) {
+		t.Error("category page 2 (categories/Demo/page/2/index.html) was not generated")
+	}
+
+	// --- Tag pagination ---
+	tagPage1Path := filepath.Join(public, "tags", "pagination", "index.html")
+	tagPage1Content, err := os.ReadFile(tagPage1Path)
+	if err != nil {
+		t.Fatal("tag page 1 (tags/pagination/index.html) was not generated:", err)
+	}
+	if !strings.Contains(string(tagPage1Content), "1 / 3") {
+		t.Error("tag page 1 should show '1 / 3'")
+	}
+
+	tagPage2Path := filepath.Join(public, "tags", "pagination", "page", "2", "index.html")
+	if _, err := os.Stat(tagPage2Path); os.IsNotExist(err) {
+		t.Error("tag page 2 (tags/pagination/page/2/index.html) was not generated")
+	}
+
+	// --- Verify individual post pages still exist (not paginated) ---
+	for _, slug := range []string{"post-1", "post-2", "post-3"} {
+		postPath := filepath.Join(public, "posts", slug, "index.html")
+		if _, err := os.Stat(postPath); os.IsNotExist(err) {
+			t.Errorf("individual post page (posts/%s/index.html) was not generated", slug)
+		}
 	}
 }
 

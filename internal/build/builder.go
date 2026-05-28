@@ -27,6 +27,41 @@ func New(cfg *config.Config, root string, r *content.Renderer, e *theme.Engine) 
 	return &Builder{cfg: cfg, root: root, renderer: r, engine: e}
 }
 
+// Paginator holds pagination info for template rendering.
+type Paginator struct {
+	PageNumber int
+	TotalPages int
+	Pages      []*content.Page
+	HasPrev    bool
+	HasNext    bool
+	PrevPage   int
+	NextPage   int
+}
+
+// newPaginator creates a Paginator for a given page of paginated results.
+func newPaginator(pages []*content.Page, page, perPage int) *Paginator {
+	totalPages := (len(pages) + perPage - 1) / perPage
+	if totalPages < 1 {
+		totalPages = 1
+	}
+
+	start := (page - 1) * perPage
+	end := start + perPage
+	if end > len(pages) {
+		end = len(pages)
+	}
+
+	return &Paginator{
+		PageNumber: page,
+		TotalPages: totalPages,
+		Pages:      pages[start:end],
+		HasPrev:    page > 1,
+		HasNext:    page < totalPages,
+		PrevPage:   page - 1,
+		NextPage:   page + 1,
+	}
+}
+
 // Build executes the complete build pipeline.
 func (b *Builder) Build() error {
 	public := filepath.Join(b.root, "public")
@@ -69,6 +104,9 @@ func (b *Builder) Build() error {
 	// 8. Copy theme assets
 	if err := b.copyThemeAssets(public); err != nil {
 		return fmt.Errorf("copy theme assets: %w", err)
+	}
+	if err := b.copyThemeStatic(public); err != nil {
+		return fmt.Errorf("copy theme static: %w", err)
 	}
 
 	// 9. SEO files
@@ -143,18 +181,60 @@ func (b *Builder) collectPages() ([]*content.Page, error) {
 	return pages, nil
 }
 
-// renderPages renders the homepage and all non-draft pages.
-func (b *Builder) renderPages(site *index.Site, public string) error {
-	// Render homepage (index.html) with all published pages
-	published := site.PublishedPages()
-	homepagePage := &content.Page{Title: b.cfg.Title}
-	homepageData := &theme.TemplateData{
-		Site:   site,
-		Page:   homepagePage,
-		Config: b.cfg,
-		Extra:  map[string]interface{}{"pages": published},
+// renderPaginatedListPages renders paginated list pages for a given set of pages.
+// baseDir is the directory for page 1; page/2/, page/3/ directories go under it.
+func (b *Builder) renderPaginatedListPages(title string, pages []*content.Page, baseDir, tmpl string, site *index.Site, public string) error {
+	perPage := b.cfg.ThemeConfig.PostsPerPage
+	if perPage < 1 {
+		perPage = 10
 	}
-	if err := b.renderToFile(homepageData, filepath.Join(public, "index.html"), "index.html"); err != nil {
+
+	totalPages := (len(pages) + perPage - 1) / perPage
+	if totalPages < 1 {
+		totalPages = 1
+	}
+
+	// Compute base URL path for pagination links (empty for homepage root)
+	basePath := ""
+	if baseDir != public {
+		rel, _ := filepath.Rel(public, baseDir)
+		basePath = "/" + filepath.ToSlash(rel)
+	}
+
+	for page := 1; page <= totalPages; page++ {
+		paginator := newPaginator(pages, page, perPage)
+
+		var outDir string
+		if page == 1 {
+			outDir = baseDir
+		} else {
+			outDir = filepath.Join(baseDir, "page", fmt.Sprintf("%d", page))
+		}
+
+		data := &theme.TemplateData{
+			Site:   site,
+			Page:   &content.Page{Title: title},
+			Config: b.cfg,
+			Extra: map[string]interface{}{
+				"title":     title,
+				"pages":     paginator.Pages,
+				"paginator": paginator,
+				"basePath":  basePath,
+			},
+		}
+
+		if err := b.renderToFile(data, filepath.Join(outDir, "index.html"), tmpl); err != nil {
+			return fmt.Errorf("render %s page %d: %w", title, page, err)
+		}
+	}
+	return nil
+}
+
+// renderPages renders the paginated homepage and all individual non-draft pages.
+func (b *Builder) renderPages(site *index.Site, public string) error {
+	// Render paginated homepage
+	published := site.PublishedPages()
+	if err := b.renderPaginatedListPages(b.cfg.Title, published, public, "index.html", site, public); err != nil {
 		return fmt.Errorf("homepage: %w", err)
 	}
 
@@ -177,7 +257,7 @@ func (b *Builder) renderPages(site *index.Site, public string) error {
 	return nil
 }
 
-// renderTaxonomies renders category and tag index and individual pages.
+// renderTaxonomies renders category/tag index pages and paginated individual pages.
 func (b *Builder) renderTaxonomies(site *index.Site, public string) error {
 	// Categories index: /categories/index.html
 	catDir := filepath.Join(public, "categories")
@@ -191,16 +271,10 @@ func (b *Builder) renderTaxonomies(site *index.Site, public string) error {
 		return fmt.Errorf("categories index: %w", err)
 	}
 
-	// Individual category pages: /categories/<cat>/index.html
+	// Individual category pages with pagination: /categories/<cat>/
 	for cat, pages := range site.Categories {
-		catPageData := &theme.TemplateData{
-			Site:   site,
-			Page:   &content.Page{Title: cat},
-			Config: b.cfg,
-			Extra:  map[string]interface{}{"title": cat, "pages": pages},
-		}
 		catPageDir := filepath.Join(catDir, cat)
-		if err := b.renderToFile(catPageData, filepath.Join(catPageDir, "index.html"), "list.html"); err != nil {
+		if err := b.renderPaginatedListPages(cat, pages, catPageDir, "list.html", site, public); err != nil {
 			return fmt.Errorf("category %q: %w", cat, err)
 		}
 	}
@@ -217,16 +291,10 @@ func (b *Builder) renderTaxonomies(site *index.Site, public string) error {
 		return fmt.Errorf("tags index: %w", err)
 	}
 
-	// Individual tag pages: /tags/<tag>/index.html
+	// Individual tag pages with pagination: /tags/<tag>/
 	for tag, pages := range site.Tags {
-		tagPageData := &theme.TemplateData{
-			Site:   site,
-			Page:   &content.Page{Title: tag},
-			Config: b.cfg,
-			Extra:  map[string]interface{}{"title": tag, "pages": pages},
-		}
 		tagPageDir := filepath.Join(tagDir, tag)
-		if err := b.renderToFile(tagPageData, filepath.Join(tagPageDir, "index.html"), "list.html"); err != nil {
+		if err := b.renderPaginatedListPages(tag, pages, tagPageDir, "list.html", site, public); err != nil {
 			return fmt.Errorf("tag %q: %w", tag, err)
 		}
 	}
@@ -299,6 +367,25 @@ func (b *Builder) copyThemeAssets(public string) error {
 			return err
 		}
 		outPath := filepath.Join(public, path)
+		if err := os.MkdirAll(filepath.Dir(outPath), 0755); err != nil {
+			return err
+		}
+		return os.WriteFile(outPath, data, 0644)
+	})
+}
+
+// copyThemeStatic copies embedded theme static files (e.g. favicon) to public/.
+func (b *Builder) copyThemeStatic(public string) error {
+	return fs.WalkDir(zhenhai.FS, "static", func(path string, d fs.DirEntry, err error) error {
+		if err != nil || d.IsDir() {
+			return err
+		}
+		data, err := zhenhai.FS.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		relPath := path[len("static/"):]
+		outPath := filepath.Join(public, relPath)
 		if err := os.MkdirAll(filepath.Dir(outPath), 0755); err != nil {
 			return err
 		}
