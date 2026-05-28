@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Test & Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.21"
+
+      - name: Run tests
+        run: go test ./internal/... -v
+
+      - name: Build binary
+        run: go build -o chenhai ./cmd/chenhai/
+
+      - name: Build example blog
+        run: |
+          cd testdata/example-blog
+          ../../chenhai build
+          test -f public/index.html && echo "Build verified"
