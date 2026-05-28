@@ -23,8 +23,9 @@ type TemplateData struct {
 
 // Engine manages Go html/template loading and rendering.
 type Engine struct {
-	templates *template.Template
-	siteRoot  string
+	templates          *template.Template
+	siteRoot           string
+	extThemeLayoutsDir string // path to external theme layouts/, empty if n/a
 }
 
 // New creates a new template Engine. Loads embedded Zhenhai theme first,
@@ -59,6 +60,32 @@ func New(cfg *config.Config, siteRoot string) (*Engine, error) {
 		return nil, fmt.Errorf("load embedded theme: %w", err)
 	}
 
+	// Override with external theme layouts/ directory if applicable
+	extThemeLayoutsDir := ""
+	if cfg.Theme != "zhenhai" {
+		extDir := filepath.Join(siteRoot, "themes", cfg.Theme, "layouts")
+		if info, err := os.Stat(extDir); err == nil && info.IsDir() {
+			if err := filepath.Walk(extDir, func(path string, info os.FileInfo, err error) error {
+				if err != nil || info.IsDir() {
+					return err
+				}
+				b, err := os.ReadFile(path)
+				if err != nil {
+					return err
+				}
+				name, _ := filepath.Rel(extDir, path)
+				name = filepath.ToSlash(name)
+				if _, err := t.New(name).Parse(string(b)); err != nil {
+					return fmt.Errorf("parse theme template %s: %w", name, err)
+				}
+				return nil
+			}); err != nil {
+				return nil, fmt.Errorf("load external theme: %w", err)
+			}
+		}
+		extThemeLayoutsDir = extDir
+	}
+
 	// Override with site's layouts/ directory if present
 	layoutsDir := filepath.Join(siteRoot, "layouts")
 	if info, err := os.Stat(layoutsDir); err == nil && info.IsDir() {
@@ -81,7 +108,7 @@ func New(cfg *config.Config, siteRoot string) (*Engine, error) {
 		}
 	}
 
-	return &Engine{templates: t, siteRoot: siteRoot}, nil
+	return &Engine{templates: t, siteRoot: siteRoot, extThemeLayoutsDir: extThemeLayoutsDir}, nil
 }
 
 // Render executes the named template with the given data.
@@ -122,13 +149,22 @@ func (e *Engine) RenderPage(w interface{ Write([]byte) (int, error) }, name stri
 }
 
 // readLayoutSource reads the source of a layout template, checking site-specific
-// layouts first, then falling back to the embedded Zhenhai theme.
+// layouts first, then the external theme layouts, then falling back to the
+// embedded Zhenhai theme.
 func (e *Engine) readLayoutSource(name string) ([]byte, error) {
 	// Check site-specific layouts directory
 	if e.siteRoot != "" {
 		siteLayoutPath := filepath.Join(e.siteRoot, "layouts", name)
 		if info, err := os.Stat(siteLayoutPath); err == nil && !info.IsDir() {
 			return os.ReadFile(siteLayoutPath)
+		}
+	}
+
+	// Check external theme layouts directory
+	if e.extThemeLayoutsDir != "" {
+		extPath := filepath.Join(e.extThemeLayoutsDir, name)
+		if info, err := os.Stat(extPath); err == nil && !info.IsDir() {
+			return os.ReadFile(extPath)
 		}
 	}
 

@@ -554,3 +554,174 @@ baseURL: "https://example.com"
 		t.Error("homepage should be generated")
 	}
 }
+
+func TestBuild_WithExternalTheme(t *testing.T) {
+	root := t.TempDir()
+
+	// Create config.yaml
+	cfgYAML := []byte(`title: "External Theme Blog"
+baseURL: "https://example.com"
+seo:
+  enableSitemap: true
+`)
+	if err := os.WriteFile(filepath.Join(root, "config.yaml"), cfgYAML, 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	// Create content/posts/
+	postsDir := filepath.Join(root, "content", "posts")
+	if err := os.MkdirAll(postsDir, 0755); err != nil {
+		t.Fatal(err)
+	}
+	postMD := []byte(`---
+title: "Test Post"
+date: "2024-01-15"
+---
+This is content.
+`)
+	if err := os.WriteFile(filepath.Join(postsDir, "test-post.md"), postMD, 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	// Create external theme layout that overrides index.html's content block
+	themeLayouts := filepath.Join(root, "themes", "test-theme", "layouts")
+	if err := os.MkdirAll(themeLayouts, 0755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(themeLayouts, "index.html"), []byte(`{{define "content"}}<h1>Custom Theme</h1>{{end}}`), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	// Create external theme asset file
+	themeAssets := filepath.Join(root, "themes", "test-theme", "assets", "css")
+	if err := os.MkdirAll(themeAssets, 0755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(themeAssets, "custom.css"), []byte("body { color: red; }"), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	// Create external theme static file
+	themeStatic := filepath.Join(root, "themes", "test-theme", "static")
+	if err := os.MkdirAll(themeStatic, 0755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(themeStatic, "theme-favicon.ico"), []byte("custom-icon"), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	// Load config and override theme
+	cfg, err := config.Load(filepath.Join(root, "config.yaml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	cfg.Theme = "test-theme"
+
+	renderer := content.NewRenderer()
+	engine, err := theme.New(cfg, root)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	builder := build.New(cfg, root, renderer, engine)
+	if err := builder.Build(); err != nil {
+		t.Fatal(err)
+	}
+
+	public := filepath.Join(root, "public")
+
+	// --- Verify external theme template overrides index.html content ---
+	homepageContent, err := os.ReadFile(filepath.Join(public, "index.html"))
+	if err != nil {
+		t.Fatal("homepage was not generated:", err)
+	}
+	if !strings.Contains(string(homepageContent), "Custom Theme") {
+		t.Error("homepage should contain external theme's 'Custom Theme' content")
+	}
+
+	// --- Verify zhenhai base template still works (fallback) ---
+	if !strings.Contains(string(homepageContent), "External Theme Blog") {
+		t.Error("homepage should contain site title from zhenhai base template")
+	}
+
+	// --- Verify external theme assets were copied ---
+	if _, err := os.Stat(filepath.Join(public, "assets", "css", "custom.css")); os.IsNotExist(err) {
+		t.Error("external theme CSS (public/assets/css/custom.css) was not copied")
+	}
+	customCSS, err := os.ReadFile(filepath.Join(public, "assets", "css", "custom.css"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(customCSS) != "body { color: red; }" {
+		t.Errorf("custom CSS content mismatch: got %q", string(customCSS))
+	}
+
+	// --- Verify zhenhai assets were also copied ---
+	if _, err := os.Stat(filepath.Join(public, "assets", "css", "style.css")); os.IsNotExist(err) {
+		t.Error("zhenhai CSS (public/assets/css/style.css) should still be copied")
+	}
+
+	// --- Verify external theme static files were copied ---
+	if _, err := os.Stat(filepath.Join(public, "theme-favicon.ico")); os.IsNotExist(err) {
+		t.Error("external theme static file (public/theme-favicon.ico) was not copied")
+	}
+
+	// --- Verify post page still works with zhenhai templates ---
+	postPagePath := filepath.Join(public, "posts", "test-post", "index.html")
+	if _, err := os.Stat(postPagePath); os.IsNotExist(err) {
+		t.Error("post page should still be generated using zhenhai template")
+	}
+	postContent, err := os.ReadFile(postPagePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(postContent), "Test Post") {
+		t.Error("post page should contain the post title")
+	}
+}
+
+func TestBuild_ExternalThemeDirectoryNotFound(t *testing.T) {
+	root := t.TempDir()
+
+	// Create config.yaml
+	cfgYAML := []byte(`title: "Missing Theme"
+baseURL: "https://example.com"
+`)
+	if err := os.WriteFile(filepath.Join(root, "config.yaml"), cfgYAML, 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	cfg, err := config.Load(filepath.Join(root, "config.yaml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Set theme to something that doesn't exist
+	cfg.Theme = "nonexistent-theme"
+
+	renderer := content.NewRenderer()
+	engine, err := theme.New(cfg, root)
+	if err != nil {
+		t.Fatalf("should not error when external theme dir doesn't exist: %v", err)
+	}
+
+	builder := build.New(cfg, root, renderer, engine)
+	if err := builder.Build(); err != nil {
+		t.Fatal(err)
+	}
+
+	public := filepath.Join(root, "public")
+
+	// Homepage should still be generated using zhenhai fallback
+	homepageContent, err := os.ReadFile(filepath.Join(public, "index.html"))
+	if err != nil {
+		t.Fatal("homepage was not generated:", err)
+	}
+	if !strings.Contains(string(homepageContent), "Missing Theme") {
+		t.Error("homepage should contain the site title from zhenhai fallback")
+	}
+
+	// Theme assets should still be copied from zhenhai
+	if _, err := os.Stat(filepath.Join(public, "assets", "css", "style.css")); os.IsNotExist(err) {
+		t.Error("zhenhai CSS should still be copied when external theme is missing")
+	}
+}
