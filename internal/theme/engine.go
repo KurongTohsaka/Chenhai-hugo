@@ -24,6 +24,7 @@ type TemplateData struct {
 // Engine manages Go html/template loading and rendering.
 type Engine struct {
 	templates *template.Template
+	siteRoot  string
 }
 
 // New creates a new template Engine. Loads embedded Zhenhai theme first,
@@ -80,7 +81,7 @@ func New(cfg *config.Config, siteRoot string) (*Engine, error) {
 		}
 	}
 
-	return &Engine{templates: t}, nil
+	return &Engine{templates: t, siteRoot: siteRoot}, nil
 }
 
 // Render executes the named template with the given data.
@@ -91,4 +92,46 @@ func (e *Engine) Render(w interface{ Write([]byte) (int, error) }, name string, 
 // HasTemplate returns true if the named template exists.
 func (e *Engine) HasTemplate(name string) bool {
 	return e.templates.Lookup(name) != nil
+}
+
+// RenderPage renders the base layout (base.html) wrapping the content block
+// from the named template (e.g., "single.html", "list.html", "index.html").
+// It clones the template set to avoid "Parse after Execute" panics,
+// re-parses the named template to ensure the correct "content"
+// sub-template definition is used, then executes base.html.
+func (e *Engine) RenderPage(w interface{ Write([]byte) (int, error) }, name string, data *TemplateData) error {
+	// Clone to avoid "cannot Parse after Execute"
+	clone, err := e.templates.Clone()
+	if err != nil {
+		return fmt.Errorf("clone templates: %w", err)
+	}
+
+	// Read the template source
+	src, err := e.readLayoutSource(name)
+	if err != nil {
+		return fmt.Errorf("read layout %s: %w", name, err)
+	}
+
+	// Re-parse to update the "content" sub-template definition
+	if _, err := clone.Parse(string(src)); err != nil {
+		return fmt.Errorf("parse layout %s: %w", name, err)
+	}
+
+	// Execute base.html which uses {{template "content" .}}
+	return clone.ExecuteTemplate(w, "base.html", data)
+}
+
+// readLayoutSource reads the source of a layout template, checking site-specific
+// layouts first, then falling back to the embedded Zhenhai theme.
+func (e *Engine) readLayoutSource(name string) ([]byte, error) {
+	// Check site-specific layouts directory
+	if e.siteRoot != "" {
+		siteLayoutPath := filepath.Join(e.siteRoot, "layouts", name)
+		if info, err := os.Stat(siteLayoutPath); err == nil && !info.IsDir() {
+			return os.ReadFile(siteLayoutPath)
+		}
+	}
+
+	// Fall back to embedded theme
+	return zhenhai.FS.ReadFile("layouts/" + name)
 }
