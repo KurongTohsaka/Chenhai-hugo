@@ -157,8 +157,39 @@ jobs:
 ### GitHub Pages 设置
 
 仓库 Settings → Pages：
-- **Source**: Deploy from a branch
+- **Source**: `Deploy from a branch`
 - **Branch**: `gh-pages` / `/ (root)`
+
+### CI 运行机制
+
+配置完成后，每次 push 会有 **两个 Action** 串联执行：
+
+```
+main push
+    │
+    ├─→ "Deploy"（我们的）      clone chenhai → build → 推 gh-pages     ~1min
+    │
+    └─→ "pages build"（内置）   从 gh-pages 发布静态文件到 CDN           ~30s
+```
+
+1. **Deploy**（`.github/workflows/deploy.yml`）——自定义 Action，编译 chenhai 后执行 `chenhai build`，将 `public/` 推送到 `gh-pages` 分支
+2. **pages build and deployment**（GitHub 内置）——检测到 `gh-pages` 分支更新，将静态文件分发到全球 CDN
+
+两个 Action 缺一不可。内置的 pages build 无法删除，但它只做纯文件分发（`gh-pages` 里只有 HTML/CSS/JS，不跑 Jekyll）。
+
+### 常见问题
+
+**两个 Action 都成功了但首页没更新**
+
+检查文章 Front Matter 中是否有 `draft: true`。草稿不会被构建。
+
+**pages build 报 Jekyll 错误**
+
+说明 Pages Source 的 Branch 还指向 `main`。`main` 分支里有 `.md` 源文件，GitHub 会尝试用 Jekyll 处理。改为 `gh-pages` 即可。
+
+**只想跑我们自己的 Action**
+
+将 Pages Source 设为 `Deploy from a branch` + Branch `gh-pages`。内置 Action 只做文件分发，不会再尝试 Jekyll 构建。
 
 ## 7. 日常写作流程
 
