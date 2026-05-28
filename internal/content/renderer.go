@@ -30,6 +30,7 @@ func NewRenderer() *Renderer {
 				mathjax.WithInlineDelim("$", "$"),
 				mathjax.WithBlockDelim("$$", "$$"),
 			),
+			Admonition,
 		),
 		goldmark.WithParserOptions(
 			parser.WithAutoHeadingID(),

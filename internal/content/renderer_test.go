@@ -1,6 +1,7 @@
 package content
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 )
@@ -227,6 +228,92 @@ func TestRenderer_EmptyInput(t *testing.T) {
 	}
 	// Empty input is valid markdown; goldmark returns empty output
 	_ = html
+}
+
+func TestRenderer_Admonition(t *testing.T) {
+	r := NewRenderer()
+	input := "> [!note]\n> This is a note.\n\n> [!warning]\n> **Warning** text here.\n\nNormal paragraph."
+	html, err := r.RenderHTML([]byte(input))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	// Verify note admonition
+	if !strings.Contains(html, `class="admonition admonition-note"`) {
+		t.Error("expected note admonition div")
+	}
+	if !strings.Contains(html, "笔记") {
+		t.Error("expected note title '笔记'")
+	}
+	if !strings.Contains(html, "This is a note.") {
+		t.Error("expected note content")
+	}
+	// Verify warning admonition
+	if !strings.Contains(html, `class="admonition admonition-warning"`) {
+		t.Error("expected warning admonition div")
+	}
+	if !strings.Contains(html, "注意") {
+		t.Error("expected warning title '注意'")
+	}
+	if !strings.Contains(html, "<strong>Warning</strong>") {
+		t.Error("expected rendered **Warning** as bold")
+	}
+	// Regular paragraph should still be present
+	if !strings.Contains(html, "Normal paragraph") {
+		t.Error("expected normal paragraph to pass through")
+	}
+}
+
+func TestRenderer_RegularBlockquote(t *testing.T) {
+	r := NewRenderer()
+	input := "> This is a regular quote.\n\nThis is a normal paragraph."
+	html, err := r.RenderHTML([]byte(input))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	// Should contain <blockquote> tag
+	if !strings.Contains(html, "<blockquote>") {
+		t.Error("expected regular blockquote tag")
+	}
+	// Should NOT contain admonition class
+	if strings.Contains(html, `class="admonition"`) {
+		t.Error("regular blockquote should not become admonition")
+	}
+}
+
+func TestRenderer_AdmonitionAllTypes(t *testing.T) {
+	r := NewRenderer()
+	types := []string{"note", "warning", "tip", "danger"}
+	for _, tp := range types {
+		input := fmt.Sprintf("> [!%s]\n> Content for %s.", tp, tp)
+		html, err := r.RenderHTML([]byte(input))
+		if err != nil {
+			t.Fatalf("%s: unexpected error: %v", tp, err)
+		}
+		if !strings.Contains(html, fmt.Sprintf(`admonition-%s`, tp)) {
+			t.Errorf("missing admonition-%s class", tp)
+		}
+	}
+}
+
+func TestRenderer_AdmonitionSameLineContent(t *testing.T) {
+	r := NewRenderer()
+	input := "> [!tip] This tip has content on the same line.\n> And a second line."
+	html, err := r.RenderHTML([]byte(input))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.Contains(html, `class="admonition admonition-tip"`) {
+		t.Error("expected tip admonition div")
+	}
+	if !strings.Contains(html, "提示") {
+		t.Error("expected tip title '提示'")
+	}
+	if !strings.Contains(html, "This tip has content on the same line.") {
+		t.Error("expected content from first line")
+	}
+	if !strings.Contains(html, "And a second line.") {
+		t.Error("expected content from second line")
+	}
 }
 
 func TestRenderer_TOCWithHeadingID(t *testing.T) {
