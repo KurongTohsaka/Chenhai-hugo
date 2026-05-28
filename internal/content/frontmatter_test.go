@@ -1,6 +1,7 @@
 package content_test
 
 import (
+	"strings"
 	"testing"
 	"time"
 
@@ -56,10 +57,10 @@ This is the body.
 	if page.Slug != "my-post" {
 		t.Errorf("Slug = %q, want %q", page.Slug, "my-post")
 	}
-	if page.TOC {
+	if page.TOC == nil || *page.TOC {
 		t.Error("TOC should be false")
 	}
-	if !page.Math {
+	if page.Math == nil || !*page.Math {
 		t.Error("Math should be true")
 	}
 	if page.Weight != 10 {
@@ -111,13 +112,43 @@ Some content.
 	if page.Draft {
 		t.Error("Draft should be false")
 	}
-	if page.TOC {
-		t.Error("TOC should be false")
+	if page.TOC != nil {
+		t.Error("TOC should be nil")
 	}
 	if page.Weight != 0 {
 		t.Errorf("Weight should be 0, got %d", page.Weight)
 	}
 	if string(body) != "Some content." {
 		t.Errorf("body = %q, want %q", string(body), "Some content.")
+	}
+}
+
+func TestParseFrontMatter_InvalidDate(t *testing.T) {
+	raw := `---
+title: Test
+date: "not-a-date"
+---
+Body.
+`
+	_, _, err := content.ParseFrontMatter([]byte(raw))
+	if err == nil {
+		t.Fatal("expected error for invalid date, got nil")
+	}
+	if !strings.Contains(err.Error(), "invalid date") {
+		t.Errorf("error should contain 'invalid date', got: %v", err)
+	}
+}
+
+func TestParseFrontMatter_Unclosed(t *testing.T) {
+	raw := `---
+title: Broken
+Body.
+`
+	_, _, err := content.ParseFrontMatter([]byte(raw))
+	if err == nil {
+		t.Fatal("expected error for unclosed front matter, got nil")
+	}
+	if !strings.Contains(err.Error(), "unclosed front matter") {
+		t.Errorf("error should contain 'unclosed front matter', got: %v", err)
 	}
 }

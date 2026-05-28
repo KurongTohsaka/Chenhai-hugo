@@ -3,6 +3,7 @@ package content
 import (
 	"bufio"
 	"bytes"
+	"fmt"
 	"strings"
 	"time"
 
@@ -20,12 +21,17 @@ func ParseFrontMatter(raw []byte) (*Page, []byte, error) {
 	scanner.Scan() // skip first ---
 
 	var yBuf strings.Builder
+	foundClose := false
 	for scanner.Scan() {
 		line := scanner.Text()
 		if strings.TrimSpace(line) == fmDelim {
+			foundClose = true
 			break
 		}
 		yBuf.WriteString(line + "\n")
+	}
+	if !foundClose {
+		return nil, raw, fmt.Errorf("unclosed front matter: missing closing ---")
 	}
 
 	bodyStart := len(fmDelim) + 1 + yBuf.Len() + len(fmDelim)
@@ -63,23 +69,19 @@ func parseFM(data string, page *Page) error {
 	page.Weight = raw.Weight
 	page.Description = raw.Description
 	page.Summary = raw.Summary
-	if raw.TOC != nil {
-		page.TOC = *raw.TOC
-	}
-	if raw.Math != nil {
-		page.Math = *raw.Math
-	}
+	page.TOC = raw.TOC
+	page.Math = raw.Math
 	if raw.Date != "" {
 		t, err := parseDate(raw.Date)
 		if err != nil {
-			return err
+			return fmt.Errorf("invalid date %q: %w", raw.Date, err)
 		}
 		page.Date = t
 	}
 	if raw.LastMod != "" {
 		t, err := parseDate(raw.LastMod)
 		if err != nil {
-			return err
+			return fmt.Errorf("invalid lastmod %q: %w", raw.LastMod, err)
 		}
 		page.LastMod = t
 	}
@@ -97,5 +99,5 @@ func parseDate(s string) (time.Time, error) {
 			return t, nil
 		}
 	}
-	return time.Time{}, nil
+	return time.Time{}, fmt.Errorf("unrecognized date format: %s", s)
 }

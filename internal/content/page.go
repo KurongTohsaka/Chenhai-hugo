@@ -17,8 +17,8 @@ type Page struct {
 	Weight      int
 	Description string
 	Summary     string
-	TOC         bool
-	Math        bool
+	TOC         *bool
+	Math        *bool
 
 	Content     string
 	RawContent  string
