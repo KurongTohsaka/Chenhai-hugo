@@ -37,8 +37,15 @@ mermaid.initialize({startOnLoad: false});
 	document.addEventListener("DOMContentLoaded", async function() {
 	  await mermaid.run({querySelector: ".mermaid"});
 	  document.querySelectorAll(".mermaid svg").forEach(function(svg) {
-	    svg.style.width = "100%";
+	    svg.removeAttribute("width");
+	    svg.style.maxWidth = "100%";
 	    svg.style.height = "auto";
+	    svg.style.display = "block";
+	    svg.style.margin = "0 auto";
+	    var c = document.createElement("div");
+	    c.className = "mermaid-svg-wrap";
+	    svg.parentNode.insertBefore(c, svg);
+	    c.appendChild(svg);
 	    svgPanZoom(svg, {
 	      zoomEnabled: true,
 	      controlIconsEnabled: false,

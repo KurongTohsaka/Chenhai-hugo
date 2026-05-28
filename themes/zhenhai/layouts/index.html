@@ -1,9 +1,12 @@
 {{define "content"}}
 <div class="site-hero">
-  <h1 class="site-hero-title">{{.Config.Title}}</h1>
-  {{if .Config.Subtitle}}
-  <p class="site-hero-subtitle">{{.Config.Subtitle}}</p>
-  {{end}}
+  <img class="site-hero-bg" src="/assets/images/hero.svg" alt="" aria-hidden="true">
+  <div class="site-hero-content">
+    <h1 class="site-hero-title">{{.Config.Title}}</h1>
+    {{if .Config.Subtitle}}
+    <p class="site-hero-subtitle">{{.Config.Subtitle}}</p>
+    {{end}}
+  </div>
 </div>
 
 {{$pages := .Extra.pages}}
