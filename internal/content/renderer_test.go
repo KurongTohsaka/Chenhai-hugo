@@ -7,7 +7,7 @@ import (
 )
 
 func TestRenderer_BasicMarkdown(t *testing.T) {
-	r := NewRenderer()
+	r := NewRenderer("")
 	md := `# Hello World
 
 This is **bold** text and a [link](https://example.com).`
@@ -29,7 +29,7 @@ This is **bold** text and a [link](https://example.com).`
 }
 
 func TestRenderer_CodeBlock(t *testing.T) {
-	r := NewRenderer()
+	r := NewRenderer("")
 	md := "```go\npackage main\n\nfunc main() {\n\tfmt.Println(\"hello\")\n}\n```"
 
 	html, err := r.RenderHTML([]byte(md))
@@ -57,7 +57,7 @@ func TestRenderer_CodeBlock(t *testing.T) {
 }
 
 func TestRenderer_MathInline(t *testing.T) {
-	r := NewRenderer()
+	r := NewRenderer("")
 	md := "Inline math: $E=mc^2$ is famous."
 
 	html, err := r.RenderHTML([]byte(md))
@@ -74,7 +74,7 @@ func TestRenderer_MathInline(t *testing.T) {
 }
 
 func TestRenderer_MathDisplay(t *testing.T) {
-	r := NewRenderer()
+	r := NewRenderer("")
 	md := "$$\n\\mathbb{E}(X) = \\int x dF(x)\n$$"
 
 	html, err := r.RenderHTML([]byte(md))
@@ -91,7 +91,7 @@ func TestRenderer_MathDisplay(t *testing.T) {
 }
 
 func TestRenderer_TOCExtraction(t *testing.T) {
-	r := NewRenderer()
+	r := NewRenderer("")
 	md := `# Title
 
 Some intro text.
@@ -159,7 +159,7 @@ Very deep content.`
 }
 
 func TestRenderer_GFMTable(t *testing.T) {
-	r := NewRenderer()
+	r := NewRenderer("")
 	md := `| Name  | Age |
 |-------|-----|
 | Alice | 30  |
@@ -185,7 +185,7 @@ func TestRenderer_GFMTable(t *testing.T) {
 }
 
 func TestRenderer_TaskList(t *testing.T) {
-	r := NewRenderer()
+	r := NewRenderer("")
 	md := `- [x] Completed task
 - [ ] Incomplete task`
 
@@ -205,7 +205,7 @@ func TestRenderer_TaskList(t *testing.T) {
 }
 
 func TestRenderer_RenderHTMLWithTOC(t *testing.T) {
-	r := NewRenderer()
+	r := NewRenderer("")
 	md := `# Only Titled
 
 Some content.`
@@ -221,7 +221,7 @@ Some content.`
 }
 
 func TestRenderer_EmptyInput(t *testing.T) {
-	r := NewRenderer()
+	r := NewRenderer("")
 	html, err := r.RenderHTML([]byte(""))
 	if err != nil {
 		t.Fatalf("RenderHTML failed: %v", err)
@@ -231,7 +231,7 @@ func TestRenderer_EmptyInput(t *testing.T) {
 }
 
 func TestRenderer_Admonition(t *testing.T) {
-	r := NewRenderer()
+	r := NewRenderer("")
 	input := "> [!note]\n> This is a note.\n\n> [!warning]\n> **Warning** text here.\n\nNormal paragraph."
 	html, err := r.RenderHTML([]byte(input))
 	if err != nil {
@@ -264,7 +264,7 @@ func TestRenderer_Admonition(t *testing.T) {
 }
 
 func TestRenderer_RegularBlockquote(t *testing.T) {
-	r := NewRenderer()
+	r := NewRenderer("")
 	input := "> This is a regular quote.\n\nThis is a normal paragraph."
 	html, err := r.RenderHTML([]byte(input))
 	if err != nil {
@@ -281,7 +281,7 @@ func TestRenderer_RegularBlockquote(t *testing.T) {
 }
 
 func TestRenderer_AdmonitionAllTypes(t *testing.T) {
-	r := NewRenderer()
+	r := NewRenderer("")
 	types := []string{"note", "warning", "tip", "danger"}
 	for _, tp := range types {
 		input := fmt.Sprintf("> [!%s]\n> Content for %s.", tp, tp)
@@ -296,7 +296,7 @@ func TestRenderer_AdmonitionAllTypes(t *testing.T) {
 }
 
 func TestRenderer_AdmonitionSameLineContent(t *testing.T) {
-	r := NewRenderer()
+	r := NewRenderer("")
 	input := "> [!tip] This tip has content on the same line.\n> And a second line."
 	html, err := r.RenderHTML([]byte(input))
 	if err != nil {
@@ -317,7 +317,7 @@ func TestRenderer_AdmonitionSameLineContent(t *testing.T) {
 }
 
 func TestRenderer_TOCWithHeadingID(t *testing.T) {
-	r := NewRenderer()
+	r := NewRenderer("")
 	md := `## Hello World
 ### Foo Bar`
 
@@ -352,7 +352,7 @@ func TestRenderer_TOCWithHeadingID(t *testing.T) {
 }
 
 func TestRenderer_ImageEnhancement(t *testing.T) {
-	r := NewRenderer()
+	r := NewRenderer("")
 	input := "![镇海](zhenhai.webp \"我的秘书舰\")"
 	html, err := r.RenderHTML([]byte(input))
 	if err != nil {
@@ -370,7 +370,7 @@ func TestRenderer_ImageEnhancement(t *testing.T) {
 }
 
 func TestRenderer_ImageAlignment(t *testing.T) {
-	r := NewRenderer()
+	r := NewRenderer("")
 	input := "![镇海 |center](zhenhai.webp)"
 	html, err := r.RenderHTML([]byte(input))
 	if err != nil {
@@ -385,7 +385,7 @@ func TestRenderer_ImageAlignment(t *testing.T) {
 }
 
 func TestRenderer_ImageNoTitle(t *testing.T) {
-	r := NewRenderer()
+	r := NewRenderer("")
 	input := "![镇海](zhenhai.webp)"
 	html, err := r.RenderHTML([]byte(input))
 	if err != nil {

@@ -17,14 +17,17 @@ type Renderer struct {
 	md goldmark.Markdown
 }
 
-func NewRenderer() *Renderer {
+func NewRenderer(style string) *Renderer {
+	if style == "" {
+		style = "github"
+	}
 	md := goldmark.New(
 		goldmark.WithExtensions(
 			extension.GFM,        // tables, strikethrough, task lists, autolinks
 			extension.Footnote,   // footnotes
 			extension.Typographer, // smart quotes, dashes, ellipses
 			highlighting.NewHighlighting(
-				highlighting.WithStyle("github-dark"),
+				highlighting.WithStyle(style),
 			),
 			mathjax.NewMathJax(
 				mathjax.WithInlineDelim("$", "$"),

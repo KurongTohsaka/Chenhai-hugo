@@ -132,7 +132,7 @@ func (s *Server) Shutdown(ctx context.Context) error {
 }
 
 func (s *Server) rebuild() error {
-	renderer := content.NewRenderer()
+	renderer := content.NewRenderer(s.cfg.Markup.Highlight.Style)
 	engine, err := theme.New(s.cfg, s.root)
 	if err != nil {
 		return fmt.Errorf("init theme: %w", err)

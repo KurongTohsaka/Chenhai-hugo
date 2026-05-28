@@ -67,7 +67,7 @@ This is the post content.
 	}
 
 	// Create renderer
-	renderer := content.NewRenderer()
+	renderer := content.NewRenderer(cfg.Markup.Highlight.Style)
 
 	// Create engine
 	engine, err := theme.New(cfg, root)
@@ -240,7 +240,7 @@ baseURL: "https://example.com"
 		t.Fatal(err)
 	}
 
-	renderer := content.NewRenderer()
+	renderer := content.NewRenderer(cfg.Markup.Highlight.Style)
 	engine, err := theme.New(cfg, root)
 	if err != nil {
 		t.Fatal(err)
@@ -317,7 +317,7 @@ This is published.
 		t.Fatal(err)
 	}
 
-	renderer := content.NewRenderer()
+	renderer := content.NewRenderer(cfg.Markup.Highlight.Style)
 	engine, err := theme.New(cfg, root)
 	if err != nil {
 		t.Fatal(err)
@@ -399,7 +399,7 @@ Content for %s.
 		t.Fatal(err)
 	}
 
-	renderer := content.NewRenderer()
+	renderer := content.NewRenderer(cfg.Markup.Highlight.Style)
 	engine, err := theme.New(cfg, root)
 	if err != nil {
 		t.Fatal(err)
@@ -538,7 +538,7 @@ baseURL: "https://example.com"
 		t.Fatal(err)
 	}
 
-	renderer := content.NewRenderer()
+	renderer := content.NewRenderer(cfg.Markup.Highlight.Style)
 	engine, err := theme.New(cfg, root)
 	if err != nil {
 		t.Fatal(err)
@@ -617,7 +617,7 @@ This is content.
 	}
 	cfg.Theme = "test-theme"
 
-	renderer := content.NewRenderer()
+	renderer := content.NewRenderer(cfg.Markup.Highlight.Style)
 	engine, err := theme.New(cfg, root)
 	if err != nil {
 		t.Fatal(err)
@@ -698,7 +698,7 @@ baseURL: "https://example.com"
 	// Set theme to something that doesn't exist
 	cfg.Theme = "nonexistent-theme"
 
-	renderer := content.NewRenderer()
+	renderer := content.NewRenderer(cfg.Markup.Highlight.Style)
 	engine, err := theme.New(cfg, root)
 	if err != nil {
 		t.Fatalf("should not error when external theme dir doesn't exist: %v", err)
@@ -768,7 +768,7 @@ Content of post two.
 		if err != nil {
 			t.Fatal(err)
 		}
-		renderer := content.NewRenderer()
+		renderer := content.NewRenderer(cfg.Markup.Highlight.Style)
 		engine, err := theme.New(cfg, root)
 		if err != nil {
 			t.Fatal(err)
