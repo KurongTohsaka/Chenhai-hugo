@@ -24,12 +24,13 @@ type Author struct {
 }
 
 type ThemeConfig struct {
-	ColorMode    string `yaml:"colorMode"`
-	ShowToc      bool   `yaml:"showToc"`
-	TocFloat     bool   `yaml:"tocFloat"`
-	CodeTheme    string `yaml:"codeTheme"`
-	DateFormat   string `yaml:"dateFormat"`
-	PostsPerPage int    `yaml:"postsPerPage"`
+	ColorMode    string                 `yaml:"colorMode"`
+	ShowToc      bool                   `yaml:"showToc"`
+	TocFloat     bool                   `yaml:"tocFloat"`
+	CodeTheme    string                 `yaml:"codeTheme"`
+	DateFormat   string                 `yaml:"dateFormat"`
+	PostsPerPage int                    `yaml:"postsPerPage"`
+	Params       map[string]interface{} `yaml:",inline"`
 }
 
 type MenuItem struct {
@@ -88,6 +89,7 @@ func DefaultConfig() *Config {
 		ThemeConfig: ThemeConfig{
 			ColorMode: "auto", ShowToc: true, TocFloat: true,
 			CodeTheme: "github-dark", DateFormat: "2006-01-02", PostsPerPage: 10,
+			Params:    map[string]interface{}{},
 		},
 		Markup: Markup{
 			Highlight: HighlightConfig{Style: "github-dark", LineNumbers: true, ShowFilename: true},

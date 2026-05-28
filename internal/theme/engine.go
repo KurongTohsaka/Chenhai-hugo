@@ -11,7 +11,17 @@ import (
 	"github.com/KurongTohsaka/chenhai-hugo/internal/config"
 	"github.com/KurongTohsaka/chenhai-hugo/internal/content"
 	"github.com/KurongTohsaka/chenhai-hugo/themes/zhenhai"
+	"gopkg.in/yaml.v3"
 )
+// ThemeMeta holds theme metadata read from theme.yaml.
+type ThemeMeta struct {
+	Name        string                 `yaml:"name"`
+	Version     string                 `yaml:"version"`
+	Description string                 `yaml:"description"`
+	Author      string                 `yaml:"author"`
+	Params      map[string]interface{} `yaml:"params"`
+}
+
 
 // TemplateData holds the data passed to every rendered template.
 type TemplateData struct {
@@ -108,6 +118,12 @@ func New(cfg *config.Config, siteRoot string) (*Engine, error) {
 		}
 	}
 
+	// Merge theme.yaml params into config (custom params from user's config.yaml
+	// take precedence over theme defaults)
+	if err := mergeThemeParams(cfg, siteRoot); err != nil {
+		return nil, fmt.Errorf("merge theme params: %w", err)
+	}
+
 	return &Engine{templates: t, siteRoot: siteRoot, extThemeLayoutsDir: extThemeLayoutsDir}, nil
 }
 
@@ -170,4 +186,50 @@ func (e *Engine) readLayoutSource(name string) ([]byte, error) {
 
 	// Fall back to embedded theme
 	return zhenhai.FS.ReadFile("layouts/" + name)
+}
+
+// mergeThemeParams loads theme.yaml from the active theme and merges
+// any default params into cfg.ThemeConfig.Params.
+// User-defined values in config.yaml take precedence and are not overwritten.
+func mergeThemeParams(cfg *config.Config, siteRoot string) error {
+	// Try external theme first
+	themeYAMLPath := filepath.Join(siteRoot, "themes", cfg.Theme, "theme.yaml")
+	data, err := os.ReadFile(themeYAMLPath)
+	if err != nil {
+		if !os.IsNotExist(err) {
+			return err
+		}
+		// Fall back to embedded zhenhai theme
+		if cfg.Theme == "zhenhai" {
+			data, err = zhenhai.FS.ReadFile("theme.yaml")
+			if err != nil {
+				return nil // shouldn't happen, but be safe
+			}
+		} else {
+			return nil // no theme.yaml, nothing to merge
+		}
+	}
+
+	var meta ThemeMeta
+	if err := yaml.Unmarshal(data, &meta); err != nil {
+		return fmt.Errorf("parse theme.yaml: %w", err)
+	}
+
+	if len(meta.Params) == 0 {
+		return nil // nothing to merge
+	}
+
+	// Initialize Params map if needed
+	if cfg.ThemeConfig.Params == nil {
+		cfg.ThemeConfig.Params = make(map[string]interface{})
+	}
+
+	// Merge defaults: only add keys not already set by user's config.yaml
+	for k, v := range meta.Params {
+		if _, exists := cfg.ThemeConfig.Params[k]; !exists {
+			cfg.ThemeConfig.Params[k] = v
+		}
+	}
+
+	return nil
 }

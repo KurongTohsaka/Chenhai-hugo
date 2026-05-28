@@ -17,6 +17,7 @@ func init() {
 	rootCmd.AddCommand(newCmd)
 	rootCmd.AddCommand(cleanCmd)
 	rootCmd.AddCommand(versionCmd)
+	newCmd.AddCommand(themeCmd)
 }
 
 func Execute() error {

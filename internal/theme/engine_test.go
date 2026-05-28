@@ -205,3 +205,94 @@ func TestNew_ExternalThemeWithNewTemplateFile(t *testing.T) {
 		t.Error("base.html should still be available")
 	}
 }
+
+func TestNew_ThemeParamsMerge(t *testing.T) {
+	dir := t.TempDir()
+
+	// Create external theme with theme.yaml containing default params
+	themeDir := filepath.Join(dir, "themes", "test-theme")
+	if err := os.MkdirAll(filepath.Join(themeDir, "layouts"), 0755); err != nil {
+		t.Fatal(err)
+	}
+	themeYAML := `name: "test-theme"
+version: "1.0.0"
+description: "A test theme"
+author: ""
+params:
+  primaryColor: "#3366ff"
+  fontSize: 16
+  showSidebar: true
+`
+	if err := os.WriteFile(filepath.Join(themeDir, "theme.yaml"), []byte(themeYAML), 0644); err != nil {
+		t.Fatal(err)
+	}
+	// Need at least base.html for engine to work
+	baseTmpl := `<!DOCTYPE html><html><body>{{block "content" .}}{{end}}</body></html>`
+	if err := os.WriteFile(filepath.Join(themeDir, "layouts", "base.html"), []byte(baseTmpl), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	cfg := config.DefaultConfig()
+	cfg.Theme = "test-theme"
+
+	engine, err := New(cfg, dir)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if engine == nil {
+		t.Fatal("engine should not be nil")
+	}
+
+	// Verify theme params were merged
+	if cfg.ThemeConfig.Params["primaryColor"] != "#3366ff" {
+		t.Errorf("expected primaryColor '#3366ff', got %v", cfg.ThemeConfig.Params["primaryColor"])
+	}
+	if cfg.ThemeConfig.Params["fontSize"] != 16 {
+		t.Errorf("expected fontSize 16, got %v", cfg.ThemeConfig.Params["fontSize"])
+	}
+	if cfg.ThemeConfig.Params["showSidebar"] != true {
+		t.Errorf("expected showSidebar true, got %v", cfg.ThemeConfig.Params["showSidebar"])
+	}
+}
+
+func TestNew_ThemeParamsUserOverride(t *testing.T) {
+	dir := t.TempDir()
+
+	// Create external theme with theme.yaml containing default params
+	themeDir := filepath.Join(dir, "themes", "test-theme")
+	if err := os.MkdirAll(filepath.Join(themeDir, "layouts"), 0755); err != nil {
+		t.Fatal(err)
+	}
+	themeYAML := `name: "test-theme"
+version: "1.0.0"
+params:
+  primaryColor: "#3366ff"
+  fontSize: 16
+`
+	if err := os.WriteFile(filepath.Join(themeDir, "theme.yaml"), []byte(themeYAML), 0644); err != nil {
+		t.Fatal(err)
+	}
+	baseTmpl := `<!DOCTYPE html><html><body>{{block "content" .}}{{end}}</body></html>`
+	if err := os.WriteFile(filepath.Join(themeDir, "layouts", "base.html"), []byte(baseTmpl), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	// Simulate user having already set some params in config.yaml
+	cfg := config.DefaultConfig()
+	cfg.Theme = "test-theme"
+	cfg.ThemeConfig.Params["primaryColor"] = "#ff0000" // user override
+
+	_, err := New(cfg, dir)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	// User's value should take precedence
+	if cfg.ThemeConfig.Params["primaryColor"] != "#ff0000" {
+		t.Errorf("expected user override primaryColor '#ff0000', got %v", cfg.ThemeConfig.Params["primaryColor"])
+	}
+	// Theme default for non-overridden value should still be applied
+	if cfg.ThemeConfig.Params["fontSize"] != 16 {
+		t.Errorf("expected fontSize 16 from theme default, got %v", cfg.ThemeConfig.Params["fontSize"])
+	}
+}

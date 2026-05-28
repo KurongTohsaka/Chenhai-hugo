@@ -237,6 +237,58 @@ mkdir -p layouts/partials
 站点 layouts/ > 外部主题目录 > 内置镇海主题
 ```
 
+### 外部主题
+
+除了内置镇海主题，Chenhai 支持加载 `themes/` 目录下的外部主题：
+
+```bash
+# 使用脚手架创建
+chenhai new theme my-theme
+
+# 在 config.yaml 中切换
+theme: "my-theme"
+```
+
+外部主题只需包含你想覆盖的文件。缺失的模板和资源自动回退到镇海主题。
+
+**目录结构**：
+
+```
+themes/my-theme/
+├── theme.yaml              ← 主题名、版本、自定义参数
+├── layouts/                ← 模板文件（覆盖镇海）
+│   ├── base.html
+│   └── index.html
+├── assets/                 ← CSS/JS/图片（覆盖镇海）
+│   └── css/style.css
+└── static/                 ← 不处理的静态文件（叠加镇海）
+```
+
+**主题参数**：
+
+`theme.yaml` 中定义默认参数：
+
+```yaml
+name: "my-theme"
+version: "1.0.0"
+params:
+  primaryColor: "#1a3650"
+  showAuthor: true
+```
+
+用户在 `config.yaml` 的 `themeConfig` 中可覆盖：
+
+```yaml
+themeConfig:
+  primaryColor: "#8b1a2b"
+```
+
+模板中访问：
+
+```html
+{{.Config.ThemeConfig.Params.primaryColor}}
+```
+
 ## 8. Markdown 写作指南
 
 ### 基础格式
