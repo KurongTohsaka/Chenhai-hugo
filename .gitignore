@@ -36,3 +36,12 @@ go.work.sum
 
 # Build output (example blog)
 testdata/example-blog/public/
+
+# Build binary
+chenhai
+chenhai.exe
+
+# Playwright artifacts
+.playwright-mcp/
+article-page.png
+homepage.png
