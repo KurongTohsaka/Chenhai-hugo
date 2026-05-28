@@ -25,7 +25,10 @@
 | fix | 搜索/暗色 UI 验证修复 |
 | fix | Mermaid 渲染修复（`<pre class="mermaid">` 格式） |
 | fix | 跨版本模板回退与 tagCloud 接口修正 |
+| feat | `chenhai deploy` 命令（add + commit + push，CI 负责构建） |
+| ci | GitHub Actions CI 配置（push → test/build/deploy） |
 | docs | 工作流文档（Typora → Chenhai → GitHub Pages） |
+| docs | 简化工作流（去掉本地 build，deploy 直达 CI） |
 
 ---
 

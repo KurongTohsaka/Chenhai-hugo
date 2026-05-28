@@ -9,7 +9,7 @@
 - [3. 配置站点](#3-配置站点)
 - [4. 写文章](#4-写文章)
 - [5. 预览](#5-预览)
-- [6. 构建与部署](#6-构建与部署)
+- [6. 构建与部署（CI 自动）](#6-构建与部署)
 - [7. 主题自定义](#7-主题自定义)
 - [8. Markdown 写作指南](#8-markdown-写作指南)
 - [9. 图床配置](#9-图床配置)
@@ -36,22 +36,23 @@ sudo mv chenhai /usr/local/bin/
 ## 2. 创建站点
 
 ```bash
-# 创建站点目录
-mkdir my-blog && cd my-blog
+# 在当前目录创建
+chenhai init
 
-# 创建内容目录
-mkdir -p content/posts content/about static/images
+# 或指定路径
+chenhai init my-blog
+cd my-blog
 ```
 
-此时目录结构：
+生成目录结构：
 
 ```
 my-blog/
+├── config.yaml          ← 站点配置
 ├── content/
-│   ├── posts/          ← 文章目录
-│   └── about/          ← 独立页面
-└── static/
-    └── images/         ← 图片等静态资源
+│   └── posts/           ← 文章目录
+├── static/              ← 静态资源
+└── archetypes/          ← 内容原型
 ```
 
 ## 3. 配置站点
@@ -124,7 +125,7 @@ seo:
 ### 使用命令行创建
 
 ```bash
-chenhai new posts/hello-world.md
+chenhai new posts/hello-world.md -c "技术" -t "博客,Go"
 ```
 
 ### 手动创建
@@ -170,32 +171,62 @@ chenhai serve --port 8080    # 自定义端口
 
 ## 6. 构建与部署
 
-### 构建
+### 工作流
+
+```
+chenhai deploy -m "add: 新文章"   →   GitHub Actions 自动构建   →   Pages 部署
+```
+
+不再需要本地 `chenhai build`。日常部署一条命令：
+
+```bash
+chenhai deploy -m "add: 新文章标题"
+```
+
+等价于 `git add → git commit → git push`，推送后 CI 自动构建。
+
+### 本地构建
+
+如需检查输出：
 
 ```bash
 chenhai build
 ```
 
-输出到 `public/` 目录的纯静态文件：
+输出 `public/` 目录：
 
 ```
 public/
-├── index.html             ← 首页
-├── posts/                 ← 文章页
-├── categories/            ← 分类聚合页
-├── tags/                  ← 标签云 + 标签页
-├── archives/              ← 时间线归档
-├── about/                 ← 独立页面
-├── search-index.json      ← 搜索索引
-├── sitemap.xml
-├── robots.txt
-├── favicon.svg
-└── assets/                ← 主题静态资源
+├── index.html
+├── posts/          ← 文章页
+├── categories/     ← 分类聚合
+├── tags/           ← 标签云 + 标签页
+├── archives/       ← 时间线归档
+├── search-index.json
+├── sitemap.xml / robots.txt
+└── assets/         ← 主题静态资源
 ```
 
-### 部署
+### CI 配置
 
-Nginx / GitHub Pages / Cloudflare Pages / Vercel / Netlify 均可。构建命令 `chenhai build`，输出目录 `public`。
+创建 `.github/workflows/deploy.yml`（参见 [workflow.md](workflow.md) 完整模板）。关键步骤：
+
+```yaml
+- name: Build Chenhai
+  run: |
+    git clone https://github.com/KurongTohsaka/Chenhai-hugo.git /tmp/chenhai
+    cd /tmp/chenhai && go build -o /usr/local/bin/chenhai ./cmd/chenhai/
+- name: Build site
+  run: chenhai build
+- name: Deploy
+  uses: peaceiris/actions-gh-pages@v3
+  with:
+    publish_dir: ./public
+```
+
+### 静态托管
+
+`public/` 目录可直接部署到 Nginx / Vercel / Cloudflare Pages 等任意托管平台。
 
 ## 7. 主题自定义
 
