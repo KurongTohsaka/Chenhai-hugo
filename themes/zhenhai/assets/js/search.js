@@ -28,6 +28,7 @@
 
   var activeResultIdx = -1;
   var debounceTimer = null;
+  var searchIndexLoadFailed = false;
 
   /* ================================================================ */
   /*  2. Load Search Index                                            */
@@ -62,15 +63,18 @@
         try {
           searchIndex = JSON.parse(xhr.responseText);
           searchIndexLoaded = true;
+          searchIndexLoadFailed = false;
         } catch (e) {
           console.error("Search: failed to parse search-index.json", e);
           searchIndex = [];
           searchIndexLoaded = true;
+          searchIndexLoadFailed = true;
         }
       } else {
         console.error("Search: failed to load search-index.json, status:", xhr.status);
         searchIndex = [];
         searchIndexLoaded = true;
+        searchIndexLoadFailed = true;
       }
       searchIndexLoading = false;
       if (callback) callback();
@@ -79,6 +83,7 @@
       console.error("Search: network error loading search-index.json");
       searchIndex = [];
       searchIndexLoaded = true;
+      searchIndexLoadFailed = true;
       searchIndexLoading = false;
       if (callback) callback();
     };
@@ -206,7 +211,7 @@
     }
 
     if (results.length === 0) {
-      searchResults.textContent = "No results found.";
+      searchResults.textContent = "未找到相关内容";
       activeResultIdx = -1;
       return;
     }
@@ -249,6 +254,10 @@
   function performSearch(query) {
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(function () {
+      if (searchIndexLoadFailed) {
+        if (searchResults) searchResults.textContent = "搜索不可用";
+        return;
+      }
       if (!searchIndexLoaded) {
         loadSearchIndex(function () {
           renderResults(search(query), query);
@@ -268,9 +277,14 @@
 
     searchOverlay.classList.add("active");
     searchModal.classList.add("active");
-    searchResults.textContent = searchIndexLoaded
-      ? "Enter keyword to search..."
-      : "Loading search index...";
+
+    if (searchIndexLoadFailed) {
+      searchResults.textContent = "搜索不可用";
+    } else {
+      searchResults.textContent = searchIndexLoaded
+        ? "Enter keyword to search..."
+        : "Loading search index...";
+    }
 
     setTimeout(function () {
       if (searchInput) searchInput.focus();
