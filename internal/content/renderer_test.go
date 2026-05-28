@@ -111,9 +111,9 @@ More content.
 
 Very deep content.`
 
-	_, items, err := r.RenderHTMLWithTOCItems([]byte(md))
+	_, items, err := r.RenderHTMLWithTOC([]byte(md))
 	if err != nil {
-		t.Fatalf("RenderHTMLWithTOCItems failed: %v", err)
+		t.Fatalf("RenderHTMLWithTOC failed: %v", err)
 	}
 
 	if len(items) < 2 {
@@ -209,7 +209,7 @@ func TestRenderer_RenderHTMLWithTOC(t *testing.T) {
 
 Some content.`
 
-	html, err := r.RenderHTMLWithTOC([]byte(md))
+	html, _, err := r.RenderHTMLWithTOC([]byte(md))
 	if err != nil {
 		t.Fatalf("RenderHTMLWithTOC failed: %v", err)
 	}
@@ -234,9 +234,9 @@ func TestRenderer_TOCWithHeadingID(t *testing.T) {
 	md := `## Hello World
 ### Foo Bar`
 
-	_, items, err := r.RenderHTMLWithTOCItems([]byte(md))
+	_, items, err := r.RenderHTMLWithTOC([]byte(md))
 	if err != nil {
-		t.Fatalf("RenderHTMLWithTOCItems failed: %v", err)
+		t.Fatalf("RenderHTMLWithTOC failed: %v", err)
 	}
 
 	if len(items) != 2 {

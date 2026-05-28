@@ -55,16 +55,7 @@ type TOCItem struct {
 	Level int
 }
 
-func (r *Renderer) RenderHTMLWithTOC(source []byte) (string, error) {
-	var buf bytes.Buffer
-	if err := r.md.Convert(source, &buf); err != nil {
-		return "", fmt.Errorf("render markdown: %w", err)
-	}
-	return buf.String(), nil
-}
-
-// RenderHTMLWithTOCItems renders HTML and also extracts TOC items from the rendered HTML.
-func (r *Renderer) RenderHTMLWithTOCItems(source []byte) (string, []TOCItem, error) {
+func (r *Renderer) RenderHTMLWithTOC(source []byte) (string, []TOCItem, error) {
 	var buf bytes.Buffer
 	if err := r.md.Convert(source, &buf); err != nil {
 		return "", nil, fmt.Errorf("render markdown: %w", err)
