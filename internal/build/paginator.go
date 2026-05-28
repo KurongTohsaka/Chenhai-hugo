@@ -83,7 +83,6 @@ func (b *Builder) renderPaginatedListPages(title string, pages []*content.Page, 
 				"pages":     paginator.Pages,
 				"paginator": paginator,
 				"basePath":  basePath,
-				"tagCloud":  site.BuildTagCloud(),
 			},
 		}
 

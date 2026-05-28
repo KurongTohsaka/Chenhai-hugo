@@ -12,11 +12,16 @@ import (
 )
 
 // collectPages walks content/ and parses all .md files.
+// For files that haven't changed (per build cache), it parses front matter
+// only and skips expensive HTML rendering to speed up incremental builds.
 func (b *Builder) collectPages() ([]*content.Page, error) {
 	contentDir := filepath.Join(b.root, "content")
 	if _, err := os.Stat(contentDir); os.IsNotExist(err) {
 		return nil, nil
 	}
+
+	// Track seen files for deletion detection
+	seenPaths := make(map[string]bool)
 
 	var pages []*content.Page
 	err := filepath.Walk(contentDir, func(path string, info os.FileInfo, err error) error {
@@ -27,18 +32,56 @@ func (b *Builder) collectPages() ([]*content.Page, error) {
 			return nil
 		}
 
+		seenPaths[path] = true
+
 		relPath, err := filepath.Rel(contentDir, path)
 		if err != nil {
 			return fmt.Errorf("rel path %s: %w", path, err)
 		}
 		relPath = filepath.ToSlash(relPath)
 
+		// Check if file is unchanged (cached and hash matches)
+		isUnchanged := false
+		if len(b.cache.Files) > 0 {
+			changed, _ := b.cache.isChanged(path)
+			isUnchanged = !changed
+		}
+
 		raw, err := os.ReadFile(path)
 		if err != nil {
 			return fmt.Errorf("read %s: %w", path, err)
 		}
 
-		// Process images through image host (before front matter parsing)
+		// For unchanged files: parse front matter only (metadata + raw content),
+		// skip expensive Markdown -> HTML rendering.
+		if isUnchanged {
+			page, _, err := content.ParseFrontMatter(raw)
+			if err != nil {
+				return fmt.Errorf("parse %s: %w", path, err)
+			}
+
+			page.Content = "" // marker: skip template rendering, output already exists
+			page.FilePath = path
+			page.RelPath = relPath
+
+			// Section is the first path segment under content/
+			parts := strings.SplitN(relPath, "/", 2)
+			if len(parts) > 0 {
+				page.Section = parts[0]
+			}
+
+			pages = append(pages, page)
+			b.skippedPaths[path] = true
+
+			if page.Title != "" {
+				fmt.Printf("  (跳过未变更: %s)\n", page.Title)
+			} else {
+				fmt.Printf("  (跳过未变更: %s)\n", relPath)
+			}
+			return nil
+		}
+
+		// Full processing for changed / new files
 		if b.imageHost != nil {
 			processed, err := b.imageHost.Process(raw, filepath.Dir(path))
 			if err != nil {
@@ -71,11 +114,21 @@ func (b *Builder) collectPages() ([]*content.Page, error) {
 		}
 
 		pages = append(pages, page)
+		b.cache.updateFile(path)
 		return nil
 	})
 	if err != nil {
 		return nil, err
 	}
+
+	// Handle deleted files: remove from public/ and cache
+	for cachedPath := range b.cache.Files {
+		if !seenPaths[cachedPath] {
+			b.removeDeletedPage(cachedPath)
+			b.cache.deleteFile(cachedPath)
+		}
+	}
+
 	return pages, nil
 }
 

@@ -16,7 +16,7 @@ func (b *Builder) renderArchives(site *index.Site, public string) error {
 		Site:   site,
 		Page:   &content.Page{Title: "Archives"},
 		Config: b.cfg,
-		Extra:  map[string]interface{}{"title": "Archives", "pages": published, "tagCloud": site.BuildTagCloud()},
+		Extra:  map[string]interface{}{"title": "Archives", "pages": published},
 	}
 	return b.renderToFile(archiveData, filepath.Join(archiveDir, "index.html"), "list.html")
 }

@@ -10,6 +10,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var newCategory string
+var newTags string
+
+func init() {
+	newCmd.Flags().StringVarP(&newCategory, "category", "c", "", "分类")
+	newCmd.Flags().StringVarP(&newTags, "tags", "t", "", "标签（逗号分隔）")
+}
+
 var newCmd = &cobra.Command{
 	Use:   "new <path>",
 	Short: "创建新文章",
@@ -36,15 +44,36 @@ var newCmd = &cobra.Command{
 		// Generate front matter from archetype or default
 		now := time.Now().Format("2006-01-02")
 		title := strings.TrimSuffix(filepath.Base(relPath), ".md")
+
+		// Build categories list
+		catList := "[]"
+		if newCategory != "" {
+			cats := strings.Split(newCategory, ",")
+			for i, c := range cats {
+				cats[i] = `"` + strings.TrimSpace(c) + `"`
+			}
+			catList = "[" + strings.Join(cats, ", ") + "]"
+		}
+
+		// Build tags list
+		tagList := "[]"
+		if newTags != "" {
+			tags := strings.Split(newTags, ",")
+			for i, t := range tags {
+				tags[i] = `"` + strings.TrimSpace(t) + `"`
+			}
+			tagList = "[" + strings.Join(tags, ", ") + "]"
+		}
+
 		content := fmt.Sprintf(`---
 title: "%s"
 date: %s
 draft: true
-categories: []
-tags: []
+categories: %s
+tags: %s
 ---
 
-`, title, now)
+`, title, now, catList, tagList)
 
 		if err := os.WriteFile(fullPath, []byte(content), 0644); err != nil {
 			return fmt.Errorf("write file: %w", err)

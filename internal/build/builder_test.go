@@ -725,3 +725,145 @@ baseURL: "https://example.com"
 		t.Error("zhenhai CSS should still be copied when external theme is missing")
 	}
 }
+
+func TestBuild_Incremental(t *testing.T) {
+	root := t.TempDir()
+
+	// Create config.yaml
+	cfgYAML := []byte(`title: "Incremental Test"
+baseURL: "https://example.com"
+`)
+	if err := os.WriteFile(filepath.Join(root, "config.yaml"), cfgYAML, 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	// Create content with two posts
+	postsDir := filepath.Join(root, "content", "posts")
+	if err := os.MkdirAll(postsDir, 0755); err != nil {
+		t.Fatal(err)
+	}
+
+	post1MD := []byte(`---
+title: "Post One"
+date: "2024-01-15"
+---
+Content of post one.
+`)
+	if err := os.WriteFile(filepath.Join(postsDir, "post-one.md"), post1MD, 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	post2MD := []byte(`---
+title: "Post Two"
+date: "2024-01-20"
+---
+Content of post two.
+`)
+	if err := os.WriteFile(filepath.Join(postsDir, "post-two.md"), post2MD, 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	createBuilder := func() *build.Builder {
+		cfg, err := config.Load(filepath.Join(root, "config.yaml"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		renderer := content.NewRenderer()
+		engine, err := theme.New(cfg, root)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return build.New(cfg, root, renderer, engine)
+	}
+
+	public := filepath.Join(root, "public")
+	cachePath := filepath.Join(root, ".chenhai-cache.json")
+
+	// --- First build: full build, creates cache ---
+	b1 := createBuilder()
+	if err := b1.Build(); err != nil {
+		t.Fatal("first build failed:", err)
+	}
+
+	// Verify cache file was created
+	if _, err := os.Stat(cachePath); os.IsNotExist(err) {
+		t.Fatal("cache file (.chenhai-cache.json) was not created")
+	}
+
+	// Verify all pages exist
+	for _, path := range []string{
+		filepath.Join(public, "posts", "post-one", "index.html"),
+		filepath.Join(public, "posts", "post-two", "index.html"),
+		filepath.Join(public, "index.html"),
+	} {
+		if _, err := os.Stat(path); os.IsNotExist(err) {
+			t.Errorf("expected file was not generated: %s", path)
+		}
+	}
+
+	// --- Second build: incremental, all pages should be skipped ---
+	b2 := createBuilder()
+	if err := b2.Build(); err != nil {
+		t.Fatal("second build failed:", err)
+	}
+
+	// Verify pages still exist (were not deleted)
+	for _, path := range []string{
+		filepath.Join(public, "posts", "post-one", "index.html"),
+		filepath.Join(public, "posts", "post-two", "index.html"),
+	} {
+		if _, err := os.Stat(path); os.IsNotExist(err) {
+			t.Errorf("page disappeared after second build: %s", path)
+		}
+	}
+
+	// --- Third build: modify post-two, only that page should be rebuilt ---
+	post2Modified := []byte(`---
+title: "Post Two (Modified)"
+date: "2024-01-20"
+---
+Content of post two, now modified.
+`)
+	if err := os.WriteFile(filepath.Join(postsDir, "post-two.md"), post2Modified, 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	b3 := createBuilder()
+	if err := b3.Build(); err != nil {
+		t.Fatal("third build failed:", err)
+	}
+
+	// Verify post-two was updated with new title
+	post2Content, err := os.ReadFile(filepath.Join(public, "posts", "post-two", "index.html"))
+	if err != nil {
+		t.Fatal("post-two was not regenerated:", err)
+	}
+	if !strings.Contains(string(post2Content), "Post Two (Modified)") {
+		t.Error("modified post-two should contain new title after incremental build")
+	}
+
+	// --- Fourth build: delete post-one, should be removed from public/ ---
+	if err := os.Remove(filepath.Join(postsDir, "post-one.md")); err != nil {
+		t.Fatal(err)
+	}
+
+	b4 := createBuilder()
+	if err := b4.Build(); err != nil {
+		t.Fatal("fourth build failed:", err)
+	}
+
+	// Verify post-one output was removed
+	post1Path := filepath.Join(public, "posts", "post-one", "index.html")
+	if _, err := os.Stat(post1Path); !os.IsNotExist(err) {
+		t.Error("deleted page output should be removed from public/")
+	}
+
+	// Verify cache no longer has post-one
+	cacheData, err := os.ReadFile(cachePath)
+	if err != nil {
+		t.Fatal("cache file should still exist:", err)
+	}
+	if strings.Contains(string(cacheData), "post-one") {
+		t.Error("cache should not contain deleted file entry")
+	}
+}

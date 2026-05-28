@@ -3,6 +3,7 @@ package theme
 import (
 	"fmt"
 	"html/template"
+	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/KurongTohsaka/chenhai-hugo/internal/config"
 	"github.com/KurongTohsaka/chenhai-hugo/internal/content"
+	"github.com/KurongTohsaka/chenhai-hugo/internal/index"
 	"github.com/KurongTohsaka/chenhai-hugo/themes/zhenhai"
 	"gopkg.in/yaml.v3"
 )
@@ -25,7 +27,7 @@ type ThemeMeta struct {
 
 // TemplateData holds the data passed to every rendered template.
 type TemplateData struct {
-	Site   interface{}            // will be *index.Site after Task 6
+	Site   *index.Site
 	Page   *content.Page
 	Config *config.Config
 	Extra  map[string]interface{}
@@ -128,7 +130,7 @@ func New(cfg *config.Config, siteRoot string) (*Engine, error) {
 }
 
 // Render executes the named template with the given data.
-func (e *Engine) Render(w interface{ Write([]byte) (int, error) }, name string, data *TemplateData) error {
+func (e *Engine) Render(w io.Writer, name string, data *TemplateData) error {
 	return e.templates.ExecuteTemplate(w, name, data)
 }
 
@@ -142,7 +144,7 @@ func (e *Engine) HasTemplate(name string) bool {
 // It clones the template set to avoid "Parse after Execute" panics,
 // re-parses the named template to ensure the correct "content"
 // sub-template definition is used, then executes base.html.
-func (e *Engine) RenderPage(w interface{ Write([]byte) (int, error) }, name string, data *TemplateData) error {
+func (e *Engine) RenderPage(w io.Writer, name string, data *TemplateData) error {
 	// Clone to avoid "cannot Parse after Execute"
 	clone, err := e.templates.Clone()
 	if err != nil {
