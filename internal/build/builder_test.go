@@ -103,6 +103,17 @@ This is the post content.
 		t.Error("post page should contain the post title 'Hello World'")
 	}
 
+		// --- Verify KaTeX/Mermaid are NOT injected for non-math content ---
+		if strings.Contains(string(postContent), "katex.min.css") {
+			t.Error("non-math post should NOT include KaTeX CSS")
+		}
+		if strings.Contains(string(postContent), "katex.min.js") {
+			t.Error("non-math post should NOT include KaTeX JS")
+		}
+		if strings.Contains(string(postContent), "mermaid.min.js") {
+			t.Error("non-math post should NOT include Mermaid JS")
+		}
+
 	// --- Verify categories index ---
 	categoriesIndexPath := filepath.Join(public, "categories", "index.html")
 	if _, err := os.Stat(categoriesIndexPath); os.IsNotExist(err) {

@@ -350,3 +350,48 @@ func TestRenderer_TOCWithHeadingID(t *testing.T) {
 		}
 	}
 }
+
+func TestRenderer_ImageEnhancement(t *testing.T) {
+	r := NewRenderer()
+	input := "![镇海](zhenhai.webp \"我的秘书舰\")"
+	html, err := r.RenderHTML([]byte(input))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.Contains(html, `<figure`) {
+		t.Error("expected <figure> wrapper")
+	}
+	if !strings.Contains(html, `<figcaption>我的秘书舰</figcaption>`) {
+		t.Error("expected caption from title")
+	}
+	if !strings.Contains(html, `loading="lazy"`) {
+		t.Error("expected lazy loading")
+	}
+}
+
+func TestRenderer_ImageAlignment(t *testing.T) {
+	r := NewRenderer()
+	input := "![镇海 |center](zhenhai.webp)"
+	html, err := r.RenderHTML([]byte(input))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.Contains(html, `image-center`) {
+		t.Error("expected image-center class")
+	}
+	if strings.Contains(html, `|center`) {
+		t.Error("alignment marker should be removed from alt")
+	}
+}
+
+func TestRenderer_ImageNoTitle(t *testing.T) {
+	r := NewRenderer()
+	input := "![镇海](zhenhai.webp)"
+	html, err := r.RenderHTML([]byte(input))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.Contains(html, `<figcaption>镇海</figcaption>`) {
+		t.Error("expected caption from alt when no title")
+	}
+}

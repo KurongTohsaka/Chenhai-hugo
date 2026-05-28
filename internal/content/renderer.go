@@ -31,6 +31,7 @@ func NewRenderer() *Renderer {
 				mathjax.WithBlockDelim("$$", "$$"),
 			),
 			Admonition,
+			ImageEnhancer,
 		),
 		goldmark.WithParserOptions(
 			parser.WithAutoHeadingID(),

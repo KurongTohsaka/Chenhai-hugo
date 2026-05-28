@@ -1,19 +1,20 @@
 package config
 
 type Config struct {
-	Title       string      `yaml:"title"`
-	Subtitle    string      `yaml:"subtitle"`
-	Description string      `yaml:"description"`
-	BaseURL     string      `yaml:"baseURL"`
-	Language    string      `yaml:"language"`
-	Copyright   string      `yaml:"copyright"`
-	Author      Author      `yaml:"author"`
-	Theme       string      `yaml:"theme"`
-	ThemeConfig ThemeConfig `yaml:"themeConfig"`
-	Menu        []MenuItem  `yaml:"menu"`
-	Markup      Markup      `yaml:"markup"`
-	Social      Social      `yaml:"social"`
-	SEO         SEO         `yaml:"seo"`
+	Title       string          `yaml:"title"`
+	Subtitle    string          `yaml:"subtitle"`
+	Description string          `yaml:"description"`
+	BaseURL     string          `yaml:"baseURL"`
+	Language    string          `yaml:"language"`
+	Copyright   string          `yaml:"copyright"`
+	Author      Author          `yaml:"author"`
+	Theme       string          `yaml:"theme"`
+	ThemeConfig ThemeConfig     `yaml:"themeConfig"`
+	Menu        []MenuItem      `yaml:"menu"`
+	Markup      Markup          `yaml:"markup"`
+	Social      Social          `yaml:"social"`
+	SEO         SEO             `yaml:"seo"`
+	ImageHost   ImageHostConfig `yaml:"imageHost"`
 }
 
 type Author struct {
@@ -69,6 +70,17 @@ type SEO struct {
 	EnableSitemap   bool   `yaml:"enableSitemap"`
 }
 
+type ImageHostConfig struct {
+	Enabled  bool   `yaml:"enabled"`
+	Provider string `yaml:"provider"`
+	Repo     string `yaml:"repo"`
+	Branch   string `yaml:"branch"`
+	BasePath string `yaml:"basePath"`
+	Token    string `yaml:"token"`
+	Mode     string `yaml:"mode"`
+	BaseURL  string `yaml:"baseURL"`
+}
+
 func DefaultConfig() *Config {
 	return &Config{
 		Language: "zh-CN",
@@ -84,5 +96,11 @@ func DefaultConfig() *Config {
 			TOC:       TOCConfig{MinDepth: 2, MaxDepth: 4},
 		},
 		SEO: SEO{EnableRobotsTXT: true, EnableSitemap: true},
+		ImageHost: ImageHostConfig{
+			Provider: "github",
+			Branch:   "main",
+			BasePath: "images/",
+			Mode:     "auto",
+		},
 	}
 }
