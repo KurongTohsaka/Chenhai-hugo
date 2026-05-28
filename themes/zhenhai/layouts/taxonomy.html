@@ -5,7 +5,7 @@
 
 {{if eq .Extra.title "Tags"}}
   {{/* Tag cloud */}}
-  {{$cloud := .Site.BuildTagCloud}}
+  {{$cloud := .Extra.tagCloud}}
   {{if $cloud}}
   <div class="tag-cloud">
     {{range $cloud}}

@@ -285,7 +285,7 @@ func (b *Builder) renderTaxonomies(site *index.Site, public string) error {
 		Site:   site,
 		Page:   &content.Page{Title: "Tags"},
 		Config: b.cfg,
-		Extra:  map[string]interface{}{"title": "Tags"},
+		Extra:  map[string]interface{}{"title": "Tags", "tagCloud": site.BuildTagCloud()},
 	}
 	if err := b.renderToFile(tagIndexData, filepath.Join(tagDir, "index.html"), "taxonomy.html"); err != nil {
 		return fmt.Errorf("tags index: %w", err)
