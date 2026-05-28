@@ -31,31 +31,8 @@ document.addEventListener("DOMContentLoaded", function() {
 {{end}}
 {{if .Extra.hasMermaid}}
 <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.2/dist/svg-pan-zoom.min.js"></script>
-<script>
-mermaid.initialize({startOnLoad: false});
-	document.addEventListener("DOMContentLoaded", async function() {
-	  await mermaid.run({querySelector: ".mermaid"});
-	  document.querySelectorAll(".mermaid svg").forEach(function(svg) {
-	    svg.removeAttribute("width");
-	    svg.style.maxWidth = "100%";
-	    svg.style.height = "auto";
-	    svg.style.display = "block";
-	    svg.style.margin = "0 auto";
-	    var c = document.createElement("div");
-	    c.className = "mermaid-svg-wrap";
-	    svg.parentNode.insertBefore(c, svg);
-	    c.appendChild(svg);
-	    svgPanZoom(svg, {
-	      zoomEnabled: true,
-	      controlIconsEnabled: false,
-	      fit: true,
-	      center: true,
-	      minZoom: 0.5,
-	      maxZoom: 5
-	    });
-	  });
-	});
+	<script>
+mermaid.initialize({startOnLoad: true, theme: 'default'});
 </script>
 {{end}}
 

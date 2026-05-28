@@ -972,12 +972,11 @@ pre:hover .copy-btn {
   margin: 1.5em auto;
   text-align: center;
   max-width: 100%;
-  overflow: hidden;
 }
 
-.mermaid-svg-wrap {
+.mermaid svg {
   max-width: 100%;
-  overflow: hidden;
+  height: auto;
 }
 
 /* ----------------------------------------------------------------- */
