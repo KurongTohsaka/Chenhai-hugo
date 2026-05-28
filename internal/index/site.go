@@ -62,7 +62,7 @@ func BuildSite(cfg *config.Config, pages []*content.Page) *Site {
 	}
 
 	for _, page := range pages {
-		if page.Draft {
+		if page.Draft || page.Layout != "" {
 			continue
 		}
 
@@ -95,7 +95,7 @@ func BuildSite(cfg *config.Config, pages []*content.Page) *Site {
 func BuildSearchIndex(pages []*content.Page) ([]byte, error) {
 	var entries []SearchEntry
 	for _, page := range pages {
-		if page.Draft {
+		if page.Draft || page.Layout != "" {
 			continue
 		}
 		preview := page.RawContent
@@ -157,7 +157,7 @@ func (s *Site) BuildTagCloud() []TagCloudEntry {
 func (s *Site) PublishedPages() []*content.Page {
 	var result []*content.Page
 	for _, page := range s.Pages {
-		if !page.Draft {
+		if !page.Draft && page.Layout == "" {
 			result = append(result, page)
 		}
 	}

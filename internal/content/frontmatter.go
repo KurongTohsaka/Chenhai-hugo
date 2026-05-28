@@ -53,6 +53,7 @@ type fmRaw struct {
 	Categories, Tags                                       []string
 	Weight                                                 int
 	TOC, Math                                              *bool
+	Layout                                                 string
 }
 
 func parseFM(data string, page *Page) error {
@@ -71,6 +72,7 @@ func parseFM(data string, page *Page) error {
 	page.Summary = raw.Summary
 	page.TOC = raw.TOC
 	page.Math = raw.Math
+	page.Layout = raw.Layout
 	if raw.Date != "" {
 		t, err := parseDate(raw.Date)
 		if err != nil {

@@ -53,7 +53,11 @@ func (b *Builder) renderPages(site *index.Site, public string) error {
 				"hasMermaid": strings.Contains(page.Content, "mermaid"),
 			},
 		}
-		if err := b.renderToFile(pageData, filepath.Join(outDir, "index.html"), "single.html"); err != nil {
+		tmpl := "single.html"
+		if page.Layout != "" {
+			tmpl = page.Layout + ".html"
+		}
+		if err := b.renderToFile(pageData, filepath.Join(outDir, "index.html"), tmpl); err != nil {
 			return fmt.Errorf("page %q: %w", page.Title, err)
 		}
 		rendered++

@@ -23,6 +23,7 @@ type Page struct {
 	Content     string
 	RawContent  string
 	IsPage      bool
+	Layout      string // custom layout template, e.g. "about" → about.html
 
 	FilePath string
 	RelPath  string
