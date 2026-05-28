@@ -1,0 +1,22 @@
+package build
+
+import (
+	"path/filepath"
+
+	"github.com/KurongTohsaka/chenhai-hugo/internal/content"
+	"github.com/KurongTohsaka/chenhai-hugo/internal/index"
+	"github.com/KurongTohsaka/chenhai-hugo/internal/theme"
+)
+
+// renderArchives renders /archives/index.html with all published pages.
+func (b *Builder) renderArchives(site *index.Site, public string) error {
+	archiveDir := filepath.Join(public, "archives")
+	published := site.PublishedPages()
+	archiveData := &theme.TemplateData{
+		Site:   site,
+		Page:   &content.Page{Title: "Archives"},
+		Config: b.cfg,
+		Extra:  map[string]interface{}{"title": "Archives", "pages": published, "tagCloud": site.BuildTagCloud()},
+	}
+	return b.renderToFile(archiveData, filepath.Join(archiveDir, "index.html"), "list.html")
+}
