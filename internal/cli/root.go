@@ -18,6 +18,7 @@ func init() {
 	rootCmd.AddCommand(cleanCmd)
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(initCmd)
+	rootCmd.AddCommand(deployCmd)
 	newCmd.AddCommand(themeCmd)
 }
 

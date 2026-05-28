@@ -4,12 +4,14 @@
 
 当前测试站点：**https://hekurong.github.io**
 
-## 工作流总览
+## 简化的三步工作流
 
 ```
-Typora 写作  →  chenhai build  →  git push  →  GitHub Actions  →  GitHub Pages
-   (.md)          (public/)        (仓库)       (自动部署)         (线上站点)
+Typora 写作  →  chenhai deploy -m "msg"  →  CI 自动构建部署
+   (.md)          (add + commit + push)        (GitHub Actions)
 ```
+
+不再需要本地 `chenhai build`——构建交给 CI。
 
 ## 1. 环境要求
 
@@ -25,15 +27,13 @@ chenhai-site/                  ← GitHub 仓库根目录
 ├── config.yaml                ← 站点配置
 ├── content/                   ← Markdown 源文件（Typora 编辑）
 │   └── posts/
-│       ├── CS224N/            ← 分类目录
+│       ├── CS224N/
 │       ├── DailyDev/
 │       └── ...
-├── static/                    ← 静态资源（不经过 Chenhai 处理）
-│   ├── img/                   ← 文章配图
-│   └── cover/                 ← 封面图
-├── public/                    ← 构建输出（GitHub Pages 源）
-├── .chenhai-cache.json        ← 增量构建缓存
-└── .github/workflows/         ← GitHub Actions 配置
+├── static/                    ← 静态资源（不经 Chenhai 处理）
+├── archetypes/                ← 内容原型
+├── .github/workflows/         ← GitHub Actions CI 配置
+└── public/                    ← CI 构建输出（已 gitignore）
 ```
 
 ## 3. 写作（Typora）
@@ -67,40 +67,58 @@ toc: true
 ![图片描述](/img/分类/文件名.png "可选标题")
 ```
 
+### 提示框（Admonition）
+
+```markdown
+> [!note]
+> 这是笔记/提示信息
+
+> [!warning]
+> 这是警告信息，需要注意
+
+> [!tip]
+> 实用小技巧
+
+> [!danger]
+> 危险/重要警告
+```
+
 ## 4. 本地预览
 
 ```bash
 cd chenhai-site
 
-# 构建
-chenhai build
-
-# 启动预览服务器
+# 启动预览服务器（含自动构建 + LiveReload）
 chenhai serve
 # → http://localhost:1313
 ```
 
 修改内容后自动重建，浏览器自动刷新。
 
-## 5. 增量构建
+## 5. 部署
 
-首次构建全量处理所有文章，后续构建只重建有变更的文件：
+写完文章后，一条命令搞定：
 
+```bash
+chenhai deploy -m "add: 新文章标题"
 ```
-首次: 扫描 → 发现 91 篇文章 → 渲染 91/91 → 完成（~2s）
-二次: 扫描 → 发现 91 篇文章（91 跳过未变更）→ 完成（~0.3s）
+
+等价于手动执行：
+
+```bash
+git add content/ static/ config.yaml archetypes/ themes/
+git commit -m "add: 新文章标题"
+git push
 ```
 
-配置文件或模板变更时自动触发全量重建。
+推送后 CI 自动构建并部署到 GitHub Pages，1-2 分钟生效。
 
-## 6. 部署到 GitHub Pages
+## 6. CI 配置
 
-### GitHub Actions 配置
-
-创建 `.github/workflows/deploy.yml`：
+在仓库中创建 `.github/workflows/deploy.yml`：
 
 ```yaml
-name: Deploy Chenhai Site
+name: Deploy
 
 on:
   push:
@@ -121,7 +139,7 @@ jobs:
         with:
           go-version: "1.21"
 
-      - name: Build Chenhai binary
+      - name: Build Chenhai
         run: |
           git clone https://github.com/KurongTohsaka/Chenhai-hugo.git /tmp/chenhai
           cd /tmp/chenhai && go build -o /usr/local/bin/chenhai ./cmd/chenhai/
@@ -136,30 +154,11 @@ jobs:
           publish_dir: ./public
 ```
 
-### 推送部署
-
-```bash
-# 本地构建
-chenhai build
-
-# 提交并推送
-git add -A
-git commit -m "new: 文章标题"
-git push origin main
-```
-
-推送后 GitHub Actions 自动：
-1. 编译 Chenhai
-2. 构建站点（`chenhai build`）
-3. 将 `public/` 推送到 `gh-pages` 分支
-4. GitHub Pages 自动更新
-
 ### GitHub Pages 设置
 
 仓库 Settings → Pages：
 - **Source**: Deploy from a branch
 - **Branch**: `gh-pages` / `/ (root)`
-- **URL**: `https://hekurong.github.io`
 
 ## 7. 日常写作流程
 
@@ -167,44 +166,42 @@ git push origin main
 # 1. Typora 写文章
 open content/posts/DailyDev/新文章.md
 
-# 2. 本地预览
+# 2. 本地预览（可选）
 chenhai serve
 
-# 3. 确认无误后提交
-git add content/posts/DailyDev/新文章.md static/img/
-git commit -m "add: 新文章"
-git push
+# 3. 确认无误，部署
+chenhai deploy -m "add: 新文章"
 ```
 
-推送后等待 1-2 分钟，线上站点自动更新。
+推送后等待 1-2 分钟，https://hekurong.github.io 自动更新。
 
-## 8. 常见操作
+## 8. 常用操作
 
-### 修改配置
+### 只修改配置
 
 ```bash
-vim config.yaml    # 修改站点配置
-chenhai build      # 重建（自动检测配置变更，全量重建）
+vim config.yaml
+chenhai deploy -m "update: 修改站点配置"
 ```
 
-### 添加新分类
-
-直接在 `content/posts/` 下创建新目录即可：
+### 添加图片
 
 ```bash
-mkdir content/posts/新分类
-chenhai new posts/新分类/文章.md -c "新分类" -t "tag1,tag2"
+cp screenshot.png static/img/
+chenhai deploy -m "add: 文章配图"
 ```
 
-### 排查问题
+### 本地调试
 
 ```bash
-# 查看构建日志
-chenhai build 2>&1 | tee build.log
+chenhai serve                 # 本地预览
+chenhai build                 # 本地构建（检查输出）
+cat .chenhai-cache.json       # 查看增量缓存
+```
 
-# 检查缓存状态
-cat .chenhai-cache.json
+### 强制全量重建（CI 或本地）
 
-# 强制全量重建
-rm -rf public/ .chenhai-cache.json && chenhai build
+```bash
+rm -rf public/ .chenhai-cache.json
+chenhai build
 ```
