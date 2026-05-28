@@ -33,3 +33,6 @@ go.work.sum
 
 # Superpowers brainstorm artifacts
 .superpowers/
+
+# Build output (example blog)
+testdata/example-blog/public/
