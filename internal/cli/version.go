@@ -8,6 +8,6 @@ var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "输出版本号",
 	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Println("chenhai v0.5.1")
+		cmd.Println("chenhai v0.5.2")
 	},
 }
