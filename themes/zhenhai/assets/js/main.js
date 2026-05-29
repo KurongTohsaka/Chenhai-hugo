@@ -388,6 +388,24 @@
     // Delay Mermaid init slightly to ensure DOM is fully rendered
     setTimeout(initMermaid, 100);
 
+    /* Image lightbox — click to enlarge */
+    document.querySelectorAll('.article-content figure img').forEach(function(img) {
+      img.style.cursor = 'zoom-in';
+      img.addEventListener('click', function() {
+        var overlay = document.createElement('div');
+        overlay.className = 'lightbox-overlay';
+        var clone = img.cloneNode(true);
+        clone.style.cursor = 'zoom-out';
+        overlay.appendChild(clone);
+        var escHandler = function(e) {
+          if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', escHandler); }
+        };
+        overlay.addEventListener('click', function() { overlay.remove(); document.removeEventListener('keydown', escHandler); });
+        document.addEventListener('keydown', escHandler);
+        document.body.appendChild(overlay);
+      });
+    });
+
     /* Back to top */
     var backToTop = document.getElementById('back-to-top');
     if (backToTop) {
