@@ -61,6 +61,23 @@ func parseFM(data string, page *Page) error {
 	if err := yaml.Unmarshal([]byte(data), &raw); err != nil {
 		return err
 	}
+
+	// Check for unknown front matter keys
+	validKeys := map[string]bool{
+		"title": true, "date": true, "lastmod": true, "draft": true,
+		"categories": true, "tags": true, "slug": true, "url": true,
+		"weight": true, "description": true, "summary": true,
+		"toc": true, "math": true, "layout": true,
+	}
+	var rawMap map[string]interface{}
+	if err := yaml.Unmarshal([]byte(data), &rawMap); err == nil {
+		for key := range rawMap {
+			if !validKeys[key] {
+				fmt.Printf("  ⚠ 未知字段 %q（已忽略，不会生效）\n", key)
+			}
+		}
+	}
+
 	page.Title = raw.Title
 	page.Draft = raw.Draft
 	page.Categories = raw.Categories
