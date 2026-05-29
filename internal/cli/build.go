@@ -27,7 +27,7 @@ var buildCmd = &cobra.Command{
 			return fmt.Errorf("load config: %w", err)
 		}
 
-		renderer := content.NewRenderer(cfg.Markup.Highlight.Style)
+		renderer := content.NewRenderer(cfg.Markup.Highlight.Style, cfg.Markup.Highlight.LineNumbers)
 		engine, err := theme.New(cfg, root)
 		if err != nil {
 			return fmt.Errorf("init theme: %w", err)

@@ -18,9 +18,13 @@ type Renderer struct {
 	md goldmark.Markdown
 }
 
-func NewRenderer(style string) *Renderer {
+func NewRenderer(style string, lineNumbers bool) *Renderer {
 	if style == "" {
 		style = "github"
+	}
+	formatOptions := []chromahtml.Option{chromahtml.WithClasses(true)}
+	if lineNumbers {
+		formatOptions = append(formatOptions, chromahtml.WithLineNumbers(true))
 	}
 	md := goldmark.New(
 		goldmark.WithExtensions(
@@ -29,9 +33,7 @@ func NewRenderer(style string) *Renderer {
 			extension.Typographer, // smart quotes, dashes, ellipses
 			highlighting.NewHighlighting(
 				highlighting.WithStyle(style),
-				highlighting.WithFormatOptions(
-					chromahtml.WithClasses(true),
-				),
+				highlighting.WithFormatOptions(formatOptions...),
 			),
 			mathjax.NewMathJax(
 				mathjax.WithInlineDelim("$", "$"),
@@ -51,11 +53,12 @@ func NewRenderer(style string) *Renderer {
 }
 
 func (r *Renderer) RenderHTML(source []byte) (string, error) {
+	cleaned, hlInfo := extractHLLines(source)
 	var buf bytes.Buffer
-	if err := r.md.Convert(source, &buf); err != nil {
+	if err := r.md.Convert(cleaned, &buf); err != nil {
 		return "", fmt.Errorf("render markdown: %w", err)
 	}
-	return buf.String(), nil
+	return injectHLLines(buf.String(), hlInfo), nil
 }
 
 type TOCItem struct {
@@ -65,11 +68,12 @@ type TOCItem struct {
 }
 
 func (r *Renderer) RenderHTMLWithTOC(source []byte) (string, []TOCItem, error) {
+	cleaned, hlInfo := extractHLLines(source)
 	var buf bytes.Buffer
-	if err := r.md.Convert(source, &buf); err != nil {
+	if err := r.md.Convert(cleaned, &buf); err != nil {
 		return "", nil, fmt.Errorf("render markdown: %w", err)
 	}
-	return buf.String(), extractTOC(buf.Bytes()), nil
+	return injectHLLines(buf.String(), hlInfo), extractTOC(buf.Bytes()), nil
 }
 
 // extractTOC scans HTML for h2/h3/h4 headings with id attributes.
