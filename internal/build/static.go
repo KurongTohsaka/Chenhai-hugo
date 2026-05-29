@@ -57,6 +57,9 @@ func (b *Builder) copyThemeAssets(public string) error {
 		if err := os.MkdirAll(filepath.Dir(outPath), 0755); err != nil {
 			return err
 		}
+		if info, err := os.Stat(outPath); err == nil && info.Size() == int64(len(data)) {
+			return nil
+		}
 		return os.WriteFile(outPath, data, 0644)
 	}); err != nil {
 		return err
@@ -81,6 +84,9 @@ func (b *Builder) copyThemeAssets(public string) error {
 				outPath := filepath.Join(public, "assets", relPath)
 				if err := os.MkdirAll(filepath.Dir(outPath), 0755); err != nil {
 					return err
+				}
+				if info, err := os.Stat(outPath); err == nil && info.Size() == int64(len(data)) {
+					return nil
 				}
 				return os.WriteFile(outPath, data, 0644)
 			}); err != nil {
@@ -108,6 +114,9 @@ func (b *Builder) copyThemeStatic(public string) error {
 		if err := os.MkdirAll(filepath.Dir(outPath), 0755); err != nil {
 			return err
 		}
+		if info, err := os.Stat(outPath); err == nil && info.Size() == int64(len(data)) {
+			return nil
+		}
 		return os.WriteFile(outPath, data, 0644)
 	}); err != nil {
 		return err
@@ -132,6 +141,9 @@ func (b *Builder) copyThemeStatic(public string) error {
 				outPath := filepath.Join(public, relPath)
 				if err := os.MkdirAll(filepath.Dir(outPath), 0755); err != nil {
 					return err
+				}
+				if info, err := os.Stat(outPath); err == nil && info.Size() == int64(len(data)) {
+					return nil
 				}
 				return os.WriteFile(outPath, data, 0644)
 			}); err != nil {
