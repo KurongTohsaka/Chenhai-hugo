@@ -2156,3 +2156,31 @@ body,
 #livereload-indicator {
   display: none;
 }
+
+/* Back to top button */
+.back-to-top {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 2.8rem;
+  height: 2.8rem;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  background: var(--color-bg-card);
+  color: var(--color-text-secondary);
+  font-size: 1.2rem;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(1rem);
+  transition: opacity 0.3s, transform 0.3s;
+  z-index: 100;
+}
+.back-to-top.visible {
+  opacity: 0.85;
+  transform: translateY(0);
+}
+.back-to-top:hover {
+  opacity: 1;
+  color: var(--color-link);
+  border-color: var(--color-link);
+}

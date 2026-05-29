@@ -387,5 +387,16 @@
 
     // Delay Mermaid init slightly to ensure DOM is fully rendered
     setTimeout(initMermaid, 100);
+
+    /* Back to top */
+    var backToTop = document.getElementById('back-to-top');
+    if (backToTop) {
+      window.addEventListener('scroll', function() {
+        backToTop.classList.toggle('visible', window.scrollY > 400);
+      }, { passive: true });
+      backToTop.addEventListener('click', function() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    }
   });
 })();
