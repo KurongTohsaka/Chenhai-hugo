@@ -1694,6 +1694,7 @@ body.dark .admonition-danger .admonition-title { color: #f85149; }
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  background: #e8e4da;
   border-bottom: 1px solid var(--color-border);
   margin-bottom: 2rem;
 }
@@ -1707,6 +1708,7 @@ body.dark .admonition-danger .admonition-title { color: #f85149; }
   object-position: top center;
   opacity: 0.18;
   pointer-events: none;
+  animation: hero-fade-in 0.6s ease-out;
 }
 
 .site-hero-content {
@@ -1728,6 +1730,11 @@ body.dark .admonition-danger .admonition-title { color: #f85149; }
   color: var(--color-text-secondary);
   line-height: 1.6;
   margin: 0;
+}
+
+@keyframes hero-fade-in {
+  from { opacity: 0; }
+  to { opacity: 0.18; }
 }
 
 /* ----------------------------------------------------------------- */
