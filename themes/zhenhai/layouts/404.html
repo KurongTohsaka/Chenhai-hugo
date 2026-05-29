@@ -1,0 +1,11 @@
+{{define "content"}}
+<div class="error-page">
+  <div class="error-code">404</div>
+  <h1 class="error-title">沧海无迹</h1>
+  <p class="error-desc">你寻找的页面已随潮水隐去，或从未存在。</p>
+  <div class="error-actions">
+    <a href="/" class="error-btn">← 返回首页</a>
+    <button class="error-btn" onclick="document.getElementById('search-overlay').classList.add('active');document.getElementById('search-modal').classList.add('active');document.getElementById('search-input').focus();">🔍 搜索文章</button>
+  </div>
+</div>
+{{end}}

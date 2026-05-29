@@ -132,7 +132,14 @@ func (b *Builder) Build() error {
 	}
 	fmt.Println("完成")
 
-	// 9. SEO files
+		// 9. Render 404 page
+		fmt.Print("  生成 404 页面 ... ")
+		if err := b.render404(site, public); err != nil {
+			return fmt.Errorf("render 404: %w", err)
+		}
+		fmt.Println("完成")
+
+	// 10. SEO files
 	if b.cfg.SEO.EnableSitemap {
 		fmt.Print("  生成 Sitemap ... ")
 		if err := b.writeSitemap(site, public); err != nil {
@@ -148,7 +155,7 @@ func (b *Builder) Build() error {
 		fmt.Println("完成")
 	}
 
-	// 10. Update config hash in cache
+	// 11. Update config hash in cache
 	if _, err := os.Stat(configPath); err == nil {
 		b.cache.updateConfig(configPath)
 	}
@@ -214,6 +221,17 @@ func (b *Builder) removeDeletedPage(path string) {
 			os.Remove(parent)
 		}
 	}
+}
+
+
+// render404 generates the 404.html page.
+func (b *Builder) render404(site *index.Site, public string) error {
+	data := &theme.TemplateData{
+		Site:   site,
+		Page:   &content.Page{Title: "404"},
+		Config: b.cfg,
+	}
+	return b.renderToFile(data, filepath.Join(public, "404.html"), "404.html")
 }
 
 // renderSearchIndex writes public/search-index.json.
