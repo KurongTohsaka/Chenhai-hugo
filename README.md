@@ -79,7 +79,7 @@ my-blog/
 
 ## 版本
 
-当前 **v0.5.1**。详见 [规划文档](docs/planning.md)。
+当前 **v0.5.2**。详见 [规划文档](docs/planning.md)。
 
 ## 文档
 

@@ -1,6 +1,6 @@
 # Chenhai 规划文档
 
-当前版本：**v0.5.1**（长期维护，持续打磨）
+当前版本：**v0.5.2**（长期维护，持续打磨）
 
 测试站点：**https://hekurong.github.io**
 
@@ -16,19 +16,33 @@
 | v0.4.0 | 2026-05 | 外部主题加载 & 回退、主题参数、主题脚手架 |
 | v0.5.0 | 2026-05 | 增量构建、`chenhai init`、`chenhai new` 增强（--category/--tags）、构建进度日志、Site 类型修正、io.Writer 规范化 |
 
-### v0.5.x 持续打磨
+### v0.5.1 — 工作流与主题打磨
 
 | 编号 | 内容 |
 |------|------|
+| feat | `chenhai deploy` 命令（add + commit + push，CI 负责构建） |
+| ci | GitHub Actions CI 配置（push → test/build/deploy） |
 | fix | Chroma CSS class 模式切换（亮/暗双模代码颜色） |
-| fix | 代码字体升级 JetBrains Mono（Google Fonts CDN） |
+| feat | 代码字体升级 JetBrains Mono（Google Fonts CDN） |
 | fix | 搜索/暗色 UI 验证修复 |
 | fix | Mermaid 渲染修复（`<pre class="mermaid">` 格式） |
 | fix | 跨版本模板回退与 tagCloud 接口修正 |
-| feat | `chenhai deploy` 命令（add + commit + push，CI 负责构建） |
-| ci | GitHub Actions CI 配置（push → test/build/deploy） |
 | docs | 工作流文档（Typora → Chenhai → GitHub Pages） |
 | docs | 简化工作流（去掉本地 build，deploy 直达 CI） |
+
+### v0.5.2 — 体验优化与工程健康
+
+| 编号 | 内容 |
+|------|------|
+| feat | 首页 Hero 角色图替换 + 背景色占位 + 淡入动画 |
+| feat | 代码块行号显示（启用已有 LineNumbers 配置） |
+| feat | 代码块行高亮（`{hl_lines=[1,3-5]}` 语法） |
+| feat | About 页面布局（自定义 layout 支持 + 图片画廊） |
+| fix | 归档页月份倒序排列（12月→1月） |
+| fix | Admonition 提示框 CSS 样式补全 |
+| fix | `chenhai new` 模板默认 draft=false，增加 toc/description |
+| test | CLI 包测试补全（version/clean/init/new/theme/root，10 个用例） |
+| docs | 移除 Mermaid pan-zoom 已知问题，清理 C-01 |
 
 ---
 
@@ -55,7 +69,7 @@
 | 任务 | 说明 |
 |------|------|
 | 性能优化 | 模板预编译缓存、并发页面渲染 |
-| 测试覆盖 | >80%，补齐 CLI / Server 包测试 |
+| 测试覆盖 | >80%，补齐 Server 包测试 |
 | 官方文档站 | chenhai.dev |
 
 ---
