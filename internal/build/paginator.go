@@ -9,15 +9,23 @@ import (
 	"github.com/KurongTohsaka/chenhai-hugo/internal/theme"
 )
 
+// PageNum holds a single page number entry for the paginator.
+type PageNum struct {
+	Number     int
+	IsCurrent  bool
+	IsEllipsis bool
+}
+
 // Paginator holds pagination info for template rendering.
 type Paginator struct {
-	PageNumber int
-	TotalPages int
-	Pages      []*content.Page
-	HasPrev    bool
-	HasNext    bool
-	PrevPage   int
-	NextPage   int
+	PageNumber  int
+	TotalPages  int
+	Pages       []*content.Page
+	HasPrev     bool
+	HasNext     bool
+	PrevPage    int
+	NextPage    int
+	PageNumbers []PageNum
 }
 
 // newPaginator creates a Paginator for a given page of paginated results.
@@ -33,14 +41,25 @@ func newPaginator(pages []*content.Page, page, perPage int) *Paginator {
 		end = len(pages)
 	}
 
+	// Build page number list with ellipsis
+	var nums []PageNum
+	for i := 1; i <= totalPages; i++ {
+		if i <= 3 || i > totalPages-3 || (i >= page-1 && i <= page+1) {
+			nums = append(nums, PageNum{Number: i, IsCurrent: i == page})
+		} else if len(nums) > 0 && !nums[len(nums)-1].IsEllipsis {
+			nums = append(nums, PageNum{IsEllipsis: true})
+		}
+	}
+
 	return &Paginator{
-		PageNumber: page,
-		TotalPages: totalPages,
-		Pages:      pages[start:end],
-		HasPrev:    page > 1,
-		HasNext:    page < totalPages,
-		PrevPage:   page - 1,
-		NextPage:   page + 1,
+		PageNumber:  page,
+		TotalPages:  totalPages,
+		Pages:       pages[start:end],
+		HasPrev:     page > 1,
+		HasNext:     page < totalPages,
+		PrevPage:    page - 1,
+		NextPage:    page + 1,
+		PageNumbers: nums,
 	}
 }
 

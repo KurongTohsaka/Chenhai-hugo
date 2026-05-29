@@ -419,8 +419,8 @@ Content for %s.
 	if err != nil {
 		t.Fatal("homepage page 1 (public/index.html) was not generated:", err)
 	}
-	if !strings.Contains(string(page1Content), "1 / 3") {
-		t.Error("homepage page 1 should show '1 / 3' (page number / total pages)")
+	if !strings.Contains(string(page1Content), `current">1</span>`) {
+		t.Error("homepage page 1 should show current page button 1")
 	}
 	// Page 1 should have "next" link but no "prev"
 	if !strings.Contains(string(page1Content), "下一页") {
@@ -452,8 +452,8 @@ Content for %s.
 	if err != nil {
 		t.Fatal("homepage page 2 (public/page/2/index.html) was not generated:", err)
 	}
-	if !strings.Contains(string(page2Content), "2 / 3") {
-		t.Error("homepage page 2 should show '2 / 3'")
+	if !strings.Contains(string(page2Content), `current">2</span>`) {
+		t.Error("homepage page 2 should show current page button 2")
 	}
 	if !strings.Contains(string(page2Content), "上一页") {
 		t.Error("homepage page 2 should have previous page link")
@@ -471,8 +471,8 @@ Content for %s.
 	if err != nil {
 		t.Fatal("homepage page 3 (public/page/3/index.html) was not generated:", err)
 	}
-	if !strings.Contains(string(page3Content), "3 / 3") {
-		t.Error("homepage page 3 should show '3 / 3'")
+	if !strings.Contains(string(page3Content), `current">3</span>`) {
+		t.Error("homepage page 3 should show current page button 3")
 	}
 	if !strings.Contains(string(page3Content), "上一页") {
 		t.Error("homepage page 3 should have previous page link")
@@ -490,8 +490,8 @@ Content for %s.
 	if err != nil {
 		t.Fatal("category page 1 (categories/Demo/index.html) was not generated:", err)
 	}
-	if !strings.Contains(string(catPage1Content), "1 / 3") {
-		t.Error("category page 1 should show '1 / 3'")
+	if !strings.Contains(string(catPage1Content), `current">1</span>`) {
+		t.Error("category page 1 should show current page button 1")
 	}
 
 	catPage2Path := filepath.Join(public, "categories", "Demo", "page", "2", "index.html")
@@ -505,8 +505,8 @@ Content for %s.
 	if err != nil {
 		t.Fatal("tag page 1 (tags/pagination/index.html) was not generated:", err)
 	}
-	if !strings.Contains(string(tagPage1Content), "1 / 3") {
-		t.Error("tag page 1 should show '1 / 3'")
+	if !strings.Contains(string(tagPage1Content), `current">1</span>`) {
+		t.Error("tag page 1 should show current page button 1")
 	}
 
 	tagPage2Path := filepath.Join(public, "tags", "pagination", "page", "2", "index.html")

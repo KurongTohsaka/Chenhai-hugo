@@ -3,14 +3,22 @@
 {{$p := .Extra.paginator}}
 {{$base := ""}}
 {{if .Extra.basePath}}{{$base = .Extra.basePath}}{{end}}
-{{if or $p.HasPrev $p.HasNext}}
+{{if gt $p.TotalPages 1}}
 <nav class="pagination">
   {{if $p.HasPrev}}
-  <a class="prev" href="{{if eq $p.PrevPage 1}}{{$base}}/{{else}}{{$base}}/page/{{$p.PrevPage}}/{{end}}">← 上一页</a>
+  <a class="page-btn prev" href="{{if eq $p.PrevPage 1}}{{$base}}/{{else}}{{$base}}/page/{{$p.PrevPage}}/{{end}}" aria-label="上一页">←</a>
   {{end}}
-  <span class="page-info">{{$p.PageNumber}} / {{$p.TotalPages}}</span>
+  {{range $p.PageNumbers}}
+  {{if .IsEllipsis}}
+  <span class="page-ellipsis">…</span>
+  {{else if .IsCurrent}}
+  <span class="page-btn current">{{.Number}}</span>
+  {{else}}
+  <a class="page-btn" href="{{if eq .Number 1}}{{$base}}/{{else}}{{$base}}/page/{{.Number}}/{{end}}">{{.Number}}</a>
+  {{end}}
+  {{end}}
   {{if $p.HasNext}}
-  <a class="next" href="{{$base}}/page/{{$p.NextPage}}/">下一页 →</a>
+  <a class="page-btn next" href="{{$base}}/page/{{$p.NextPage}}/" aria-label="下一页">→</a>
   {{end}}
 </nav>
 {{end}}
