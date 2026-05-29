@@ -125,20 +125,26 @@ func TestBuildSite_Archives(t *testing.T) {
 	}
 
 	// Verify specific month contents
-	janPages := site.Archives.Items[2024][time.January]
-	if len(janPages) != 1 {
-		t.Fatalf("expected 1 page in Jan 2024, got %d", len(janPages))
-	}
-	if janPages[0].Title != "jan2024" {
-		t.Errorf("expected 'jan2024' in Jan 2024, got %s", janPages[0].Title)
+	for _, m := range site.Archives.Items[2024] {
+		if m.Month == time.January {
+			if len(m.Pages) != 1 {
+				t.Fatalf("expected 1 page in Jan 2024, got %d", len(m.Pages))
+			}
+			if m.Pages[0].Title != "jan2024" {
+				t.Errorf("expected 'jan2024' in Jan 2024, got %s", m.Pages[0].Title)
+			}
+		}
 	}
 
-	decPages := site.Archives.Items[2023][time.December]
-	if len(decPages) != 1 {
-		t.Fatalf("expected 1 page in Dec 2023, got %d", len(decPages))
-	}
-	if decPages[0].Title != "dec2023" {
-		t.Errorf("expected 'dec2023' in Dec 2023, got %s", decPages[0].Title)
+	for _, m := range site.Archives.Items[2023] {
+		if m.Month == time.December {
+			if len(m.Pages) != 1 {
+				t.Fatalf("expected 1 page in Dec 2023, got %d", len(m.Pages))
+			}
+			if m.Pages[0].Title != "dec2023" {
+				t.Errorf("expected 'dec2023' in Dec 2023, got %s", m.Pages[0].Title)
+			}
+		}
 	}
 }
 
@@ -172,9 +178,9 @@ func TestBuildSite_DraftExcluded(t *testing.T) {
 
 	// Draft page should not appear in Archives
 	totalArchivePages := 0
-	for _, monthMap := range site.Archives.Items {
-		for _, pages := range monthMap {
-			totalArchivePages += len(pages)
+	for _, months := range site.Archives.Items {
+		for _, m := range months {
+			totalArchivePages += len(m.Pages)
 		}
 	}
 	if totalArchivePages != 1 {

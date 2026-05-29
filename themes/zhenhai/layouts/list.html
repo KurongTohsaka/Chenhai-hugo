@@ -16,13 +16,13 @@
         <span class="archive-year-toggle">[-]</span>
       </div>
       <div class="archive-months">
-        {{range $month, $monthPages := $months}}
+        {{range $months}}
         <div class="archive-month">
           <div class="archive-month-header">
-            <span class="archive-month-title">{{printf "%d" $month}}月</span>
+            <span class="archive-month-title">{{printf "%d" .Month}}月</span>
           </div>
           <ul class="archive-month-posts">
-            {{range $monthPages}}
+            {{range .Pages}}
             <li class="archive-month-post">
               <a href="{{.Permalink}}">
                 <span>{{.Title}}</span>

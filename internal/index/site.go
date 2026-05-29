@@ -18,10 +18,16 @@ type Site struct {
 	Archives   *Archive
 }
 
-// Archive holds pages grouped by year then month.
+// ArchiveMonth holds pages for a specific month.
+type ArchiveMonth struct {
+	Month time.Month
+	Pages []*content.Page
+}
+
+// Archive holds pages grouped by year then month (months sorted 12→1).
 type Archive struct {
 	Years []int
-	Items map[int]map[time.Month][]*content.Page
+	Items map[int][]ArchiveMonth
 }
 
 // SearchEntry is a single entry in the search-index.json.
@@ -57,7 +63,7 @@ func BuildSite(cfg *config.Config, pages []*content.Page) *Site {
 		Categories: make(map[string][]*content.Page),
 		Tags:       make(map[string][]*content.Page),
 		Archives: &Archive{
-			Items: make(map[int]map[time.Month][]*content.Page),
+			Items: make(map[int][]ArchiveMonth),
 		},
 	}
 
@@ -80,11 +86,22 @@ func BuildSite(cfg *config.Config, pages []*content.Page) *Site {
 		// Archives
 		year := page.Date.Year()
 		month := page.Date.Month()
-		if site.Archives.Items[year] == nil {
-			site.Archives.Items[year] = make(map[time.Month][]*content.Page)
+		if _, ok := site.Archives.Items[year]; !ok {
 			site.Archives.Years = append(site.Archives.Years, year)
 		}
-		site.Archives.Items[year][month] = append(site.Archives.Items[year][month], page)
+		site.Archives.Items[year] = appendArchiveMonth(site.Archives.Items[year], month, page)
+	}
+
+	// Sort years descending
+	sort.Slice(site.Archives.Years, func(i, j int) bool {
+		return site.Archives.Years[i] > site.Archives.Years[j]
+	})
+
+	// Sort months within each year descending (12→1)
+	for _, months := range site.Archives.Items {
+		sort.Slice(months, func(i, j int) bool {
+			return months[i].Month > months[j].Month
+		})
 	}
 
 	return site
@@ -172,4 +189,15 @@ func (s *Site) PagesByCategory(category string) []*content.Page {
 // PagesByTag returns pages filtered by tag.
 func (s *Site) PagesByTag(tag string) []*content.Page {
 	return s.Tags[tag]
+}
+
+// appendArchiveMonth appends a page to the correct month slice.
+func appendArchiveMonth(months []ArchiveMonth, month time.Month, page *content.Page) []ArchiveMonth {
+	for i := range months {
+		if months[i].Month == month {
+			months[i].Pages = append(months[i].Pages, page)
+			return months
+		}
+	}
+	return append(months, ArchiveMonth{Month: month, Pages: []*content.Page{page}})
 }
