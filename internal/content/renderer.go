@@ -58,7 +58,8 @@ func (r *Renderer) RenderHTML(source []byte) (string, error) {
 	if err := r.md.Convert(cleaned, &buf); err != nil {
 		return "", fmt.Errorf("render markdown: %w", err)
 	}
-	return injectHLLines(buf.String(), hlInfo), nil
+	result := injectHLLines(buf.String(), hlInfo)
+	return splitLineNumbers(result), nil
 }
 
 type TOCItem struct {
@@ -73,7 +74,8 @@ func (r *Renderer) RenderHTMLWithTOC(source []byte) (string, []TOCItem, error) {
 	if err := r.md.Convert(cleaned, &buf); err != nil {
 		return "", nil, fmt.Errorf("render markdown: %w", err)
 	}
-	return injectHLLines(buf.String(), hlInfo), extractTOC(buf.Bytes()), nil
+	result := injectHLLines(buf.String(), hlInfo)
+	return splitLineNumbers(result), extractTOC(buf.Bytes()), nil
 }
 
 // extractTOC scans HTML for h2/h3/h4 headings with id attributes.
