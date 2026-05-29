@@ -4,13 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="{{.Config.Description}}">
-<meta name="theme-color" content="#f7f4ef">
-<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#1a1d2e">
+<meta name="color-scheme" content="dark light">
 <title>{{.Page.Title}}{{if ne .Page.Title .Config.Title}} - {{.Config.Title}}{{end}}</title>
 
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 
-<link rel="stylesheet" href="/assets/css/style.css?v=7">
+<script>
+(function(){var m=localStorage.getItem('zhenhai-color-mode');if(m==='dark'||(!m&&matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark');}})();
+</script>
+
+<link rel="preload" as="image" href="/images/zhenhai/xingtai/1200px-镇海改造日服预告.jpg">
+
+<link rel="stylesheet" href="/assets/css/style.css?v=8">
 
 {{if .Extra.hasMath}}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
@@ -30,11 +36,10 @@ document.addEventListener("DOMContentLoaded", function() {
 </script>
 {{end}}
 {{if .Extra.hasMermaid}}
-<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
 {{end}}
 
 {{if .Config.SEO.GoogleAnalytics}}
-<!-- Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id={{.Config.SEO.GoogleAnalytics}}"></script>
 <script>
 window.dataLayer = window.dataLayer || [];
@@ -48,10 +53,8 @@ gtag('config', '{{.Config.SEO.GoogleAnalytics}}');
 
 {{template "header" .}}
 
-<!-- Reading Progress Bar -->
 <div id="reading-progress-bar" class="reading-progress-bar"></div>
 
-<!-- Mobile Menu Overlay -->
 <div id="mobile-menu-overlay" class="mobile-menu-overlay"></div>
 <div id="mobile-menu-panel" class="mobile-menu-panel">
   <button id="mobile-menu-close" class="mobile-menu-close" aria-label="Close menu">&times;</button>
@@ -62,7 +65,6 @@ gtag('config', '{{.Config.SEO.GoogleAnalytics}}');
   </nav>
 </div>
 
-<!-- Search Overlay & Modal -->
 <div id="search-overlay" class="search-overlay"></div>
 <div id="search-modal" class="search-modal">
   <div class="search-modal-header">
@@ -87,7 +89,7 @@ gtag('config', '{{.Config.SEO.GoogleAnalytics}}');
 
 {{template "footer" .}}
 
-<script src="/assets/js/main.js"></script>
-<script src="/assets/js/search.js"></script>
+<script defer src="/assets/js/main.js"></script>
+<script defer src="/assets/js/search.js"></script>
 </body>
 </html>

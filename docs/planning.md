@@ -1,6 +1,6 @@
 # Chenhai 规划文档
 
-当前版本：**v0.5.2**（长期维护，持续打磨）
+当前版本：**v0.5.3**（长期维护，持续打磨）
 
 测试站点：**https://hekurong.github.io**
 
@@ -43,6 +43,17 @@
 | fix | `chenhai new` 模板默认 draft=false，增加 toc/description |
 | test | CLI 包测试补全（version/clean/init/new/theme/root，10 个用例） |
 | docs | 移除 Mermaid pan-zoom 已知问题，清理 C-01 |
+
+### v0.5.3 — 暗色模式防闪烁与性能优化
+
+| 编号 | 内容 |
+|------|------|
+| fix | 暗色模式页面切换白屏闪烁（head 内联脚本提前注入 dark class + meta theme-color 适配） |
+| perf | JS 脚本全量添加 defer（main.js / search.js / Mermaid），消除渲染阻塞 |
+| perf | Hero 图片添加 preload 预加载 |
+| perf | 代码块行号 sticky 定位（水平滚动时行号固定） |
+| fix | Hero 高度缩减 + 暗色模式标题色加亮 + text-shadow |
+| fix | 代码块内边距收紧（行号左/代码右） |
 
 ---
 
