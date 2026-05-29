@@ -18,35 +18,36 @@
   /*  1. Dark/Light Mode Toggle                                       */
   /* ================================================================ */
 
-  const STORAGE_KEY = "zhenhai-color-mode";
+  var STORAGE_KEY = "zhenhai-color-mode";
 
-  function getPreferredTheme() {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored === "dark" || stored === "light") return stored;
-    // Respect system preference
-    if (window.matchMedia("(prefers-color-scheme: dark)").matches) return "dark";
-    return "light";
+  function getTheme() {
+    return document.body.classList.contains("dark") ? "dark" : "light";
   }
 
-  function setTheme(mode) {
+  function setTheme(mode, save) {
     document.body.classList.toggle("dark", mode === "dark");
-    localStorage.setItem(STORAGE_KEY, mode);
-    // Dispatch custom event for Mermaid and other listeners
+    if (save !== false) {
+      localStorage.setItem(STORAGE_KEY, mode);
+    }
     document.dispatchEvent(new CustomEvent("zhenhai-theme-change", { detail: { mode: mode } }));
   }
 
   function toggleTheme() {
-    const next = document.body.classList.contains("dark") ? "light" : "dark";
+    var next = getTheme() === "dark" ? "light" : "dark";
     setTheme(next);
   }
 
-  // Init theme on page load
-  setTheme(getPreferredTheme());
+  // Init: only set localStorage if explicitly stored (not auto)
+  var stored = localStorage.getItem(STORAGE_KEY);
+  if (stored === "dark" || stored === "light") {
+    setTheme(stored, false); // don't re-save, already stored
+  }
 
-  // Listen for system preference changes
-  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function (e) {
+  // Listen for system changes — always active
+  var sysDark = window.matchMedia("(prefers-color-scheme: dark)");
+  sysDark.addEventListener("change", function (e) {
     if (!localStorage.getItem(STORAGE_KEY)) {
-      setTheme(e.matches ? "dark" : "light");
+      setTheme(e.matches ? "dark" : "light", false);
     }
   });
 
