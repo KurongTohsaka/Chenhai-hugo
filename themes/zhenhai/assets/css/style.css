@@ -1755,6 +1755,11 @@ body.dark .admonition-danger .admonition-title { color: #f85149; }
   to { opacity: 0.18; }
 }
 
+/* Dark mode: override hero placeholder background for text contrast */
+body.dark .site-hero {
+  background: #1a1d2e;
+}
+
 /* ----------------------------------------------------------------- */
 /*  20. Prev / Next Post Navigation (single.html)                     */
 /* ----------------------------------------------------------------- */
