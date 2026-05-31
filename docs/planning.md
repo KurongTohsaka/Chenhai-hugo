@@ -79,13 +79,14 @@
 
 | 编号 | 内容 |
 |------|------|
-| feat | 相关文章推荐（基于标签/分类） |
-| feat | 代码块语言标签（右上角显示语言名） |
-| feat | Fuse.js 搜索增强（替换 indexOf 子串匹配） |
-| feat | Series 系列文章（front matter series 字段，上下篇导航） |
-| feat | 面包屑导航（分类/标签页顶部路径） |
-| feat | 构建耗时统计（chenhai build 各阶段耗时） |
-| feat | Draft 预览模式（chenhai serve --drafts） |
+| feat | 相关文章推荐（标签 Jaccard 相似度） |
+| feat | 代码块语言标签（浮动卡片样式，hover 显隐） |
+| feat | Fuse.js 模糊搜索（替换 indexOf 子串匹配，CDN 引入） |
+| feat | Series 系列文章（播放列表盒子，weight/date/title 三级排序，自由跳转） |
+| feat | 构建耗时统计（各阶段耗时输出 + 总耗时） |
+| feat | Draft 预览模式（`chenhai serve --drafts` 本地预览草稿） |
+| fix | 双 Copy 按钮去重、语言标签边框样式、Series 滚动限制与 visited 色 |
+| revert | 面包屑导航（已移除，不实用） |
 
 ---
 
