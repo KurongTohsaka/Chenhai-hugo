@@ -867,6 +867,23 @@ pre:hover .copy-btn {
   opacity: 1;
 }
 
+/* Language label */
+.code-wrapper[data-lang]::before {
+  content: attr(data-lang);
+  position: absolute;
+  top: 0;
+  right: 3.5rem;
+  padding: 0.15em 0.7em;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--color-text-secondary);
+  background: var(--color-code-filename-bg);
+  border-radius: 0 0 4px 4px;
+  opacity: 0.7;
+  z-index: 2;
+  text-transform: lowercase;
+}
+
 /* Line highlight — driven by data-hl-lines attribute + JS */
 .code-body pre.chroma[data-hl-lines] .hl {
   display: inline-block;

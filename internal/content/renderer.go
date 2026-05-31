@@ -53,12 +53,14 @@ func NewRenderer(style string, lineNumbers bool) *Renderer {
 }
 
 func (r *Renderer) RenderHTML(source []byte) (string, error) {
+	langs := extractLangs(source)
 	cleaned, hlInfo := extractHLLines(source)
 	var buf bytes.Buffer
 	if err := r.md.Convert(cleaned, &buf); err != nil {
 		return "", fmt.Errorf("render markdown: %w", err)
 	}
 	result := injectHLLines(buf.String(), hlInfo)
+	result = injectLangLabels(result, langs)
 	return splitLineNumbers(result), nil
 }
 
@@ -69,12 +71,14 @@ type TOCItem struct {
 }
 
 func (r *Renderer) RenderHTMLWithTOC(source []byte) (string, []TOCItem, error) {
+	langs := extractLangs(source)
 	cleaned, hlInfo := extractHLLines(source)
 	var buf bytes.Buffer
 	if err := r.md.Convert(cleaned, &buf); err != nil {
 		return "", nil, fmt.Errorf("render markdown: %w", err)
 	}
 	result := injectHLLines(buf.String(), hlInfo)
+	result = injectLangLabels(result, langs)
 	return splitLineNumbers(result), extractTOC(buf.Bytes()), nil
 }
 

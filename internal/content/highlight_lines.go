@@ -88,9 +88,59 @@ func splitLineNumbers(html string) string {
 			}
 		}
 
+		// Extract data-lang attribute to put on wrapper
+		var langAttr string
+		if strings.Contains(attrs, "data-lang=") {
+			re := regexp.MustCompile(`data-lang="([^"]*)"`)
+			if m := re.FindStringSubmatch(attrs); len(m) > 1 {
+				langAttr = fmt.Sprintf(` data-lang="%s"`, m[1])
+				attrs = re.ReplaceAllString(attrs, "")
+			}
+			attrs = strings.TrimSpace(attrs)
+			if attrs != "" {
+				attrs = " " + attrs
+			}
+		}
+
 		return fmt.Sprintf(
-			`<div class="code-wrapper"><div class="code-ln">%s</div><div class="code-body"><pre class="chroma"%s><code>%s</code></pre></div></div>`,
-			lnHTML, attrs, cleaned,
+			`<div class="code-wrapper"%s><div class="code-ln">%s</div><div class="code-body"><pre class="chroma"%s><code>%s</code></pre></div></div>`,
+			langAttr, lnHTML, attrs, cleaned,
 		)
+	})
+}
+
+// fencedCodeRe matches ```lang at start of fenced code blocks.
+var fencedCodeRe = regexp.MustCompile("`" + "`" + "`([a-zA-Z0-9_+#-]+)")
+
+// extractLangs scans markdown source for fenced code block language names.
+func extractLangs(source []byte) []string {
+	var langs []string
+	matches := fencedCodeRe.FindAllSubmatch(source, -1)
+	for _, m := range matches {
+		lang := strings.ToLower(string(m[1]))
+		if strings.HasPrefix(lang, "{") || lang == "" {
+			continue
+		}
+		langs = append(langs, lang)
+	}
+	return langs
+}
+
+// injectLangLabels injects data-lang attributes into <pre class="chroma"> elements.
+// This must be called BEFORE splitLineNumbers so the attribute propagates.
+func injectLangLabels(html string, langs []string) string {
+	if len(langs) == 0 {
+		return html
+	}
+	preRe := regexp.MustCompile(`<pre[^>]*class="chroma"[^>]*>`)
+	idx := 0
+	return preRe.ReplaceAllStringFunc(html, func(match string) string {
+		if idx < len(langs) {
+			result := match[:len(match)-1] + fmt.Sprintf(` data-lang="%s">`, langs[idx])
+			idx++
+			return result
+		}
+		idx++
+		return match
 	})
 }
