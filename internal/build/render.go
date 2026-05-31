@@ -53,6 +53,9 @@ func (b *Builder) renderPages(site *index.Site, public string) error {
 				"hasMermaid": strings.Contains(page.Content, "mermaid"),
 			},
 		}
+		if related := site.RelatedPosts(page, 3); len(related) > 0 {
+			pageData.Extra["related"] = related
+		}
 		tmpl := "single.html"
 		if page.Layout != "" {
 			tmpl = page.Layout + ".html"

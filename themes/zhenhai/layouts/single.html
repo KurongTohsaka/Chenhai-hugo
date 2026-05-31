@@ -57,4 +57,18 @@
   {{end}}
 </nav>
 {{end}}
+
+{{if .Extra.related}}
+<section class="related-posts">
+  <h3 class="related-title">相关文章</h3>
+  <div class="related-grid">
+    {{range .Extra.related}}
+    <a class="related-card" href="{{.Permalink}}">
+      <span class="related-card-title">{{.Title}}</span>
+      <span class="related-card-date">{{.Date.Format "2006-01-02"}}</span>
+    </a>
+    {{end}}
+  </div>
+</section>
+{{end}}
 {{end}}

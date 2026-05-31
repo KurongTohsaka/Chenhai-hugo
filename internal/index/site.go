@@ -191,6 +191,56 @@ func (s *Site) PagesByTag(tag string) []*content.Page {
 	return s.Tags[tag]
 }
 
+// RelatedPosts returns up to n most related non-draft posts for the given page,
+// based on tag overlap (Jaccard similarity).
+func (s *Site) RelatedPosts(page *content.Page, n int) []*content.Page {
+	if len(page.Tags) == 0 {
+		return nil
+	}
+	type scored struct {
+		p     *content.Page
+		score float64
+	}
+	var candidates []scored
+	pageTagSet := make(map[string]bool)
+	for _, t := range page.Tags {
+		pageTagSet[t] = true
+	}
+	for _, p := range s.PublishedPages() {
+		if p.FilePath == page.FilePath {
+			continue
+		}
+		intersection := 0
+		for _, t := range p.Tags {
+			if pageTagSet[t] {
+				intersection++
+			}
+		}
+		if intersection == 0 {
+			continue
+		}
+		union := len(pageTagSet)
+		for _, t := range p.Tags {
+			if !pageTagSet[t] {
+				union++
+			}
+		}
+		score := float64(intersection) / float64(union)
+		candidates = append(candidates, scored{p, score})
+	}
+	sort.Slice(candidates, func(i, j int) bool {
+		return candidates[i].score > candidates[j].score
+	})
+	if len(candidates) > n {
+		candidates = candidates[:n]
+	}
+	result := make([]*content.Page, len(candidates))
+	for i, c := range candidates {
+		result[i] = c.p
+	}
+	return result
+}
+
 // appendArchiveMonth appends a page to the correct month slice.
 func appendArchiveMonth(months []ArchiveMonth, month time.Month, page *content.Page) []ArchiveMonth {
 	for i := range months {
