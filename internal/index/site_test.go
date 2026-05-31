@@ -35,7 +35,7 @@ func TestBuildSite_Categories(t *testing.T) {
 		testPage("post-d", time.Date(2023, 12, 1, 0, 0, 0, 0, time.UTC), false, nil, nil),
 	}
 
-	site := index.BuildSite(cfg, pages)
+	site := index.BuildSite(cfg, pages, false)
 
 	if len(site.Categories) != 3 {
 		t.Fatalf("expected 3 categories, got %d", len(site.Categories))
@@ -74,7 +74,7 @@ func TestBuildSite_Tags(t *testing.T) {
 		testPage("post-c", time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC), false, nil, []string{"web", "frontend"}),
 	}
 
-	site := index.BuildSite(cfg, pages)
+	site := index.BuildSite(cfg, pages, false)
 
 	if len(site.Tags) != 4 {
 		t.Fatalf("expected 4 tags, got %d", len(site.Tags))
@@ -107,7 +107,7 @@ func TestBuildSite_Archives(t *testing.T) {
 		testPage("dec2023", time.Date(2023, 12, 20, 0, 0, 0, 0, time.UTC), false, nil, nil),
 	}
 
-	site := index.BuildSite(cfg, pages)
+	site := index.BuildSite(cfg, pages, false)
 
 	// Should have 2 years
 	if len(site.Archives.Years) != 2 {
@@ -155,7 +155,7 @@ func TestBuildSite_DraftExcluded(t *testing.T) {
 		testPage("published-post", time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC), false, []string{"Tech"}, []string{"real-tag"}),
 	}
 
-	site := index.BuildSite(cfg, pages)
+	site := index.BuildSite(cfg, pages, false)
 
 	// Draft page should not appear in Categories
 	if _, ok := site.Categories["Tech"]; !ok {
@@ -187,9 +187,9 @@ func TestBuildSite_DraftExcluded(t *testing.T) {
 		t.Errorf("expected 1 page in archives (draft excluded), got %d", totalArchivePages)
 	}
 
-	// Draft page should still be in the Pages slice
-	if len(site.Pages) != 2 {
-		t.Errorf("expected 2 pages in total (draft included in Pages), got %d", len(site.Pages))
+	// Draft page should NOT be in the Pages slice when showDrafts=false
+	if len(site.Pages) != 1 {
+		t.Errorf("expected 1 page in total (draft excluded from Pages when showDrafts=false), got %d", len(site.Pages))
 	}
 }
 
@@ -201,7 +201,7 @@ func TestBuildSite_SortOrder(t *testing.T) {
 		testPage("newest", time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC), false, nil, nil),
 	}
 
-	site := index.BuildSite(cfg, pages)
+	site := index.BuildSite(cfg, pages, false)
 
 	if len(site.Pages) != 3 {
 		t.Fatalf("expected 3 pages, got %d", len(site.Pages))
@@ -332,7 +332,7 @@ func TestBuildTagCloud(t *testing.T) {
 		testPage("p11", time.Date(2024, 11, 1, 0, 0, 0, 0, time.UTC), false, nil, []string{"popular"}),      // popular=5
 	}
 
-	site := index.BuildSite(cfg, pages)
+	site := index.BuildSite(cfg, pages, false)
 	cloud := site.BuildTagCloud()
 
 	// Verify all 3 tags present
@@ -375,7 +375,7 @@ func TestBuildTagCloud(t *testing.T) {
 
 func TestBuildTagCloud_Empty(t *testing.T) {
 	cfg := config.DefaultConfig()
-	site := index.BuildSite(cfg, nil)
+	site := index.BuildSite(cfg, nil, false)
 	cloud := site.BuildTagCloud()
 
 	if cloud != nil {
@@ -388,7 +388,7 @@ func TestBuildTagCloud_NoTags(t *testing.T) {
 	pages := []*content.Page{
 		testPage("no-tags", time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC), false, nil, nil),
 	}
-	site := index.BuildSite(cfg, pages)
+	site := index.BuildSite(cfg, pages, false)
 	cloud := site.BuildTagCloud()
 
 	if cloud != nil {
@@ -402,7 +402,7 @@ func TestBuildTagCloud_SingleTag(t *testing.T) {
 		testPage("p1", time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC), false, nil, []string{"only"}),
 		testPage("p2", time.Date(2024, 2, 1, 0, 0, 0, 0, time.UTC), false, nil, []string{"only"}),
 	}
-	site := index.BuildSite(cfg, pages)
+	site := index.BuildSite(cfg, pages, false)
 	cloud := site.BuildTagCloud()
 
 	if len(cloud) != 1 {
@@ -430,7 +430,7 @@ func TestPublishedPages(t *testing.T) {
 		testPage("also-published", time.Date(2023, 12, 1, 0, 0, 0, 0, time.UTC), false, nil, nil),
 	}
 
-	site := index.BuildSite(cfg, pages)
+	site := index.BuildSite(cfg, pages, false)
 	published := site.PublishedPages()
 
 	if len(published) != 2 {
@@ -453,7 +453,7 @@ func TestPagesByCategory(t *testing.T) {
 		testPage("c", time.Date(2024, 3, 1, 0, 0, 0, 0, time.UTC), false, []string{"Y"}, nil),
 	}
 
-	site := index.BuildSite(cfg, pages)
+	site := index.BuildSite(cfg, pages, false)
 
 	catX := site.PagesByCategory("X")
 	if len(catX) != 2 {
@@ -478,7 +478,7 @@ func TestPagesByTag(t *testing.T) {
 		testPage("b", time.Date(2024, 2, 1, 0, 0, 0, 0, time.UTC), false, nil, []string{"tag1"}),
 	}
 
-	site := index.BuildSite(cfg, pages)
+	site := index.BuildSite(cfg, pages, false)
 
 	tag1 := site.PagesByTag("tag1")
 	if len(tag1) != 2 {

@@ -21,18 +21,20 @@ type Builder struct {
 	renderer     *content.Renderer
 	engine       *theme.Engine
 	imageHost    *imagehost.Host
+	showDrafts   bool
 	cache        *BuildCache
 	skippedPaths map[string]bool // content file paths skipped because unchanged
 }
 
 // New creates a new Builder.
-func New(cfg *config.Config, root string, r *content.Renderer, e *theme.Engine) *Builder {
+func New(cfg *config.Config, root string, r *content.Renderer, e *theme.Engine, showDrafts bool) *Builder {
 	return &Builder{
-		cfg:       cfg,
-		root:      root,
-		renderer:  r,
-		engine:    e,
-		imageHost: imagehost.New(&cfg.ImageHost),
+		cfg:        cfg,
+		root:       root,
+		renderer:   r,
+		engine:     e,
+		imageHost:  imagehost.New(&cfg.ImageHost),
+		showDrafts: showDrafts,
 	}
 }
 
@@ -92,7 +94,7 @@ func (b *Builder) Build() error {
 
 	// 2. Build site index
 	t = time.Now()
-	site := index.BuildSite(b.cfg, pages)
+	site := index.BuildSite(b.cfg, pages, b.showDrafts)
 	fmt.Printf("  标签: %d | 分类: %d (%s)\n", len(site.Tags), len(site.Categories), time.Since(t).Round(time.Millisecond))
 
 	// 3. Render pages

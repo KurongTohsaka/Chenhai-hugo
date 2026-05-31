@@ -33,7 +33,7 @@ var buildCmd = &cobra.Command{
 			return fmt.Errorf("init theme: %w", err)
 		}
 
-		builder := build.New(cfg, root, renderer, engine)
+		builder := build.New(cfg, root, renderer, engine, false)
 		if err := builder.Build(); err != nil {
 			return fmt.Errorf("build failed: %w", err)
 		}

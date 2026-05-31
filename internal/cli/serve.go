@@ -11,10 +11,14 @@ import (
 	"github.com/KurongTohsaka/chenhai-hugo/internal/server"
 )
 
-var port int
+var (
+	port   int
+	drafts bool
+)
 
 func init() {
 	serveCmd.Flags().IntVarP(&port, "port", "p", 1313, "服务器端口")
+	serveCmd.Flags().BoolVarP(&drafts, "drafts", "D", false, "预览草稿")
 }
 
 var serveCmd = &cobra.Command{
@@ -32,7 +36,7 @@ var serveCmd = &cobra.Command{
 			return fmt.Errorf("load config: %w", err)
 		}
 
-		srv := server.New(cfg, root)
+		srv := server.New(cfg, root, drafts)
 		return srv.Start(port)
 	},
 }

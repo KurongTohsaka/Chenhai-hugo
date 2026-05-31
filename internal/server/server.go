@@ -29,19 +29,21 @@ ws.onclose=function(){setTimeout(function(){location.reload()},2000);};})();
 
 // Server wraps an HTTP server with file watching capabilities.
 type Server struct {
-	cfg      *config.Config
-	root     string
-	http     *http.Server
-	wsConns  map[*websocket.Conn]bool
-	wsMu     sync.Mutex
-	upgrader websocket.Upgrader
+	cfg        *config.Config
+	root       string
+	showDrafts bool
+	http       *http.Server
+	wsConns    map[*websocket.Conn]bool
+	wsMu       sync.Mutex
+	upgrader   websocket.Upgrader
 }
 
 // New creates a new dev server.
-func New(cfg *config.Config, root string) *Server {
+func New(cfg *config.Config, root string, showDrafts bool) *Server {
 	s := &Server{
-		cfg:  cfg,
-		root: root,
+		cfg:        cfg,
+		root:       root,
+		showDrafts: showDrafts,
 		wsConns: make(map[*websocket.Conn]bool),
 		upgrader: websocket.Upgrader{
 			CheckOrigin: func(r *http.Request) bool { return true },
@@ -137,7 +139,7 @@ func (s *Server) rebuild() error {
 	if err != nil {
 		return fmt.Errorf("init theme: %w", err)
 	}
-	builder := build.New(s.cfg, s.root, renderer, engine)
+	builder := build.New(s.cfg, s.root, renderer, engine, s.showDrafts)
 	return builder.Build()
 }
 

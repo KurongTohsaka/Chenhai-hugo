@@ -15,7 +15,7 @@ import (
 // newTestTemplateData creates minimal TemplateData with a single page.
 func newTestTemplateData(cfg *config.Config) *TemplateData {
 	page := &content.Page{Title: "Test Post", Date: parseDate("2024-01-15")}
-	site := index.BuildSite(cfg, []*content.Page{page})
+	site := index.BuildSite(cfg, []*content.Page{page}, false)
 	return &TemplateData{
 		Config: cfg,
 		Page:   page,

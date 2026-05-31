@@ -14,7 +14,7 @@ import (
 func TestNew(t *testing.T) {
 	cfg := config.DefaultConfig()
 	dir := t.TempDir()
-	s := New(cfg, dir)
+	s := New(cfg, dir, false)
 	if s == nil {
 		t.Fatal("New returned nil")
 	}
@@ -53,7 +53,7 @@ func TestLiveReloadInjection(t *testing.T) {
 	os.WriteFile(htmlPath, []byte(testHTML), 0644)
 
 	cfg := config.DefaultConfig()
-	s := New(cfg, dir)
+	s := New(cfg, dir, false)
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/test.html", nil)
@@ -76,7 +76,7 @@ func TestFileServerHTMLInjection(t *testing.T) {
 	os.WriteFile(cssPath, []byte("body{}"), 0644)
 
 	cfg := config.DefaultConfig()
-	s := New(cfg, dir)
+	s := New(cfg, dir, false)
 	handler := s.fileServerWithLiveReload(dir)
 
 	// HTML file should get live reload injected
@@ -98,7 +98,7 @@ func TestFileServerHTMLInjection(t *testing.T) {
 
 func TestHandleWebSocket(t *testing.T) {
 	cfg := config.DefaultConfig()
-	s := New(cfg, t.TempDir())
+	s := New(cfg, t.TempDir(), false)
 
 	// Non-WebSocket request should be handled gracefully (no panic)
 	w := httptest.NewRecorder()

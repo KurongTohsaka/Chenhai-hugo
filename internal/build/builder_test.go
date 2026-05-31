@@ -76,7 +76,7 @@ This is the post content.
 	}
 
 	// Create builder and build
-	builder := build.New(cfg, root, renderer, engine)
+	builder := build.New(cfg, root, renderer, engine, false)
 	if err := builder.Build(); err != nil {
 		t.Fatal(err)
 	}
@@ -246,7 +246,7 @@ baseURL: "https://example.com"
 		t.Fatal(err)
 	}
 
-	builder := build.New(cfg, root, renderer, engine)
+	builder := build.New(cfg, root, renderer, engine, false)
 	if err := builder.Build(); err != nil {
 		t.Fatal(err)
 	}
@@ -323,7 +323,7 @@ This is published.
 		t.Fatal(err)
 	}
 
-	builder := build.New(cfg, root, renderer, engine)
+	builder := build.New(cfg, root, renderer, engine, false)
 	if err := builder.Build(); err != nil {
 		t.Fatal(err)
 	}
@@ -405,7 +405,7 @@ Content for %s.
 		t.Fatal(err)
 	}
 
-	builder := build.New(cfg, root, renderer, engine)
+	builder := build.New(cfg, root, renderer, engine, false)
 	if err := builder.Build(); err != nil {
 		t.Fatal(err)
 	}
@@ -544,7 +544,7 @@ baseURL: "https://example.com"
 		t.Fatal(err)
 	}
 
-	builder := build.New(cfg, root, renderer, engine)
+	builder := build.New(cfg, root, renderer, engine, false)
 	if err := builder.Build(); err != nil {
 		t.Fatal("build should succeed even without static/ directory:", err)
 	}
@@ -623,7 +623,7 @@ This is content.
 		t.Fatal(err)
 	}
 
-	builder := build.New(cfg, root, renderer, engine)
+	builder := build.New(cfg, root, renderer, engine, false)
 	if err := builder.Build(); err != nil {
 		t.Fatal(err)
 	}
@@ -704,7 +704,7 @@ baseURL: "https://example.com"
 		t.Fatalf("should not error when external theme dir doesn't exist: %v", err)
 	}
 
-	builder := build.New(cfg, root, renderer, engine)
+	builder := build.New(cfg, root, renderer, engine, false)
 	if err := builder.Build(); err != nil {
 		t.Fatal(err)
 	}
@@ -773,7 +773,7 @@ Content of post two.
 		if err != nil {
 			t.Fatal(err)
 		}
-		return build.New(cfg, root, renderer, engine)
+		return build.New(cfg, root, renderer, engine, false)
 	}
 
 	public := filepath.Join(root, "public")
