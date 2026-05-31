@@ -56,6 +56,21 @@ func (b *Builder) renderPages(site *index.Site, public string) error {
 		if related := site.RelatedPosts(page, 3); len(related) > 0 {
 			pageData.Extra["related"] = related
 		}
+		if page.Series != "" {
+			if seriesPages, ok := site.Series[page.Series]; ok {
+				for i, p := range seriesPages {
+					if p.FilePath == page.FilePath {
+						if i > 0 {
+							pageData.Extra["seriesPrev"] = seriesPages[i-1]
+						}
+						if i < len(seriesPages)-1 {
+							pageData.Extra["seriesNext"] = seriesPages[i+1]
+						}
+						break
+					}
+				}
+			}
+		}
 		tmpl := "single.html"
 		if page.Layout != "" {
 			tmpl = page.Layout + ".html"

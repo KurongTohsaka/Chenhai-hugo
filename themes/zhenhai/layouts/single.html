@@ -23,6 +23,20 @@
   {{.Page.Content | safeHTML}}
 </article>
 
+{{if or .Extra.seriesPrev .Extra.seriesNext}}
+<nav class="series-nav">
+  <span class="series-label">{{.Page.Series}} 系列</span>
+  <div class="series-links">
+    {{if .Extra.seriesPrev}}
+    <a class="series-link prev" href="{{.Extra.seriesPrev.Permalink}}">← {{.Extra.seriesPrev.Title}}</a>
+    {{end}}
+    {{if .Extra.seriesNext}}
+    <a class="series-link next" href="{{.Extra.seriesNext.Permalink}}">{{.Extra.seriesNext.Title}} →</a>
+    {{end}}
+  </div>
+</nav>
+{{end}}
+
 <!-- Prev/Next Post Navigation -->
 {{$pages := .Site.PublishedPages}}
 {{$prev := ""}}

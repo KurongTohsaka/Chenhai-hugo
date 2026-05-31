@@ -15,6 +15,7 @@ type Site struct {
 	Pages      []*content.Page
 	Categories map[string][]*content.Page // key = category path like "技术/Go"
 	Tags       map[string][]*content.Page // key = tag name
+	Series     map[string][]*content.Page
 	Archives   *Archive
 }
 
@@ -62,6 +63,7 @@ func BuildSite(cfg *config.Config, pages []*content.Page) *Site {
 		Pages:      pages,
 		Categories: make(map[string][]*content.Page),
 		Tags:       make(map[string][]*content.Page),
+		Series:     make(map[string][]*content.Page),
 		Archives: &Archive{
 			Items: make(map[int][]ArchiveMonth),
 		},
@@ -90,6 +92,11 @@ func BuildSite(cfg *config.Config, pages []*content.Page) *Site {
 			site.Archives.Years = append(site.Archives.Years, year)
 		}
 		site.Archives.Items[year] = appendArchiveMonth(site.Archives.Items[year], month, page)
+
+		// Series
+		if page.Series != "" {
+			site.Series[page.Series] = append(site.Series[page.Series], page)
+		}
 	}
 
 	// Sort years descending
@@ -101,6 +108,13 @@ func BuildSite(cfg *config.Config, pages []*content.Page) *Site {
 	for _, months := range site.Archives.Items {
 		sort.Slice(months, func(i, j int) bool {
 			return months[i].Month > months[j].Month
+		})
+	}
+
+	// Sort each series by date ascending
+	for _, pages := range site.Series {
+		sort.Slice(pages, func(i, j int) bool {
+			return pages[i].Date.Before(pages[j].Date)
 		})
 	}
 

@@ -54,6 +54,7 @@ type fmRaw struct {
 	Weight                                                 int
 	TOC, Math                                              *bool
 	Layout                                                 string
+	Series                                                 string
 }
 
 func parseFM(data string, page *Page) error {
@@ -67,7 +68,7 @@ func parseFM(data string, page *Page) error {
 		"title": true, "date": true, "lastmod": true, "draft": true,
 		"categories": true, "tags": true, "slug": true, "url": true,
 		"weight": true, "description": true, "summary": true,
-		"toc": true, "math": true, "layout": true,
+		"toc": true, "math": true, "layout": true, "series": true,
 	}
 	var rawMap map[string]interface{}
 	if err := yaml.Unmarshal([]byte(data), &rawMap); err == nil {
@@ -90,6 +91,7 @@ func parseFM(data string, page *Page) error {
 	page.TOC = raw.TOC
 	page.Math = raw.Math
 	page.Layout = raw.Layout
+	page.Series = raw.Series
 	if raw.Date != "" {
 		t, err := parseDate(raw.Date)
 		if err != nil {

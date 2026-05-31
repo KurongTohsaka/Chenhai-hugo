@@ -28,6 +28,7 @@ type Page struct {
 	FilePath string
 	RelPath  string
 	Section  string
+	Series   string
 }
 
 func (p *Page) Permalink() string {

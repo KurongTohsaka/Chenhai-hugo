@@ -2331,3 +2331,29 @@ body,
   font-size: 0.82rem;
   color: var(--color-text-secondary);
 }
+
+/* Series navigation */
+.series-nav {
+  margin-top: 1.5rem;
+  padding: 1rem 1.2rem;
+  background: var(--color-bg-alt);
+  border-radius: 6px;
+  border-left: 3px solid var(--color-link);
+}
+.series-label {
+  font-size: 0.82rem;
+  color: var(--color-text-secondary);
+  margin-bottom: 0.6rem;
+  display: block;
+  font-family: var(--font-ui);
+}
+.series-links {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.series-link {
+  font-weight: 600;
+  font-size: 0.92rem;
+}
