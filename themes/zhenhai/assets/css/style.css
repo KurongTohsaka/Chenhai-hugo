@@ -2357,3 +2357,28 @@ body,
   font-weight: 600;
   font-size: 0.92rem;
 }
+
+/* ----------------------------------------------------------------- */
+/*  29. Breadcrumb                                                    */
+/* ----------------------------------------------------------------- */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.2rem;
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+}
+.breadcrumb a {
+  color: var(--color-text-secondary);
+}
+.breadcrumb a:hover {
+  color: var(--color-link);
+}
+.breadcrumb-sep {
+  color: var(--color-border);
+}
+.breadcrumb-current {
+  color: var(--color-heading);
+  font-weight: 600;
+}
