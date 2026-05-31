@@ -1,6 +1,6 @@
 # Chenhai 规划文档
 
-当前版本：**v0.6.0**（功能迭代）
+当前版本：**v0.6.1**（功能迭代）
 
 测试站点：**https://hekurong.github.io**
 
@@ -87,6 +87,16 @@
 | feat | Draft 预览模式（`chenhai serve --drafts` 本地预览草稿） |
 | fix | 双 Copy 按钮去重、语言标签边框样式、Series 滚动限制与 visited 色 |
 | revert | 面包屑导航（已移除，不实用） |
+
+### v0.6.1 — 细节修复
+
+| 编号 | 内容 |
+|------|------|
+| fix | 暗色模式全局 visited 链接色加 0.85 透明度 |
+| fix | 无行号代码块也支持语言标签 |
+| fix | Series 列表长标题截断省略 |
+| perf | Google Fonts 从 CSS @import 改为 HTML link（非阻塞加载） |
+| fix | 分页器移动端换行（flex-wrap） |
 
 ---
 
