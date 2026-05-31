@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/KurongTohsaka/chenhai-hugo/internal/config"
 	"github.com/KurongTohsaka/chenhai-hugo/internal/content"
@@ -39,6 +40,9 @@ func New(cfg *config.Config, root string, r *content.Renderer, e *theme.Engine) 
 func (b *Builder) Build() error {
 	fmt.Println("Chenhai 构建中...")
 
+	var totalStart = time.Now()
+	var t time.Time
+
 	public := filepath.Join(b.root, "public")
 
 	// Load build cache
@@ -67,6 +71,7 @@ func (b *Builder) Build() error {
 
 	// 1. Collect all pages from content/
 	b.skippedPaths = make(map[string]bool)
+	t = time.Now()
 	fmt.Print("  扫描 content/ ... ")
 	pages, err := b.collectPages()
 	if err != nil {
@@ -80,49 +85,53 @@ func (b *Builder) Build() error {
 	}
 	skipped := len(b.skippedPaths)
 	if skipped > 0 {
-		fmt.Printf("发现 %d 篇文章（%d 已发布，%d 跳过未变更）\n", len(pages), pubCount, skipped)
+		fmt.Printf("发现 %d 篇文章（%d 已发布，%d 跳过未变更）(%s)\n", len(pages), pubCount, skipped, time.Since(t).Round(time.Millisecond))
 	} else {
-		fmt.Printf("发现 %d 篇文章（%d 已发布）\n", len(pages), pubCount)
+		fmt.Printf("发现 %d 篇文章（%d 已发布）(%s)\n", len(pages), pubCount, time.Since(t).Round(time.Millisecond))
 	}
 
 	// 2. Build site index
+	t = time.Now()
 	site := index.BuildSite(b.cfg, pages)
-	fmt.Printf("  标签: %d | 分类: %d\n", len(site.Tags), len(site.Categories))
+	fmt.Printf("  标签: %d | 分类: %d (%s)\n", len(site.Tags), len(site.Categories), time.Since(t).Round(time.Millisecond))
 
 	// 3. Render pages
+	t = time.Now()
 	fmt.Print("  渲染页面 ... ")
 	if err := b.renderPages(site, public); err != nil {
 		return fmt.Errorf("render pages: %w", err)
 	}
-	fmt.Println("完成")
+	fmt.Printf("完成 (%s)\n", time.Since(t).Round(time.Millisecond))
 
 	// 4. Render taxonomies
+	t = time.Now()
 	fmt.Print("  渲染归档与分类 ... ")
 	if err := b.renderTaxonomies(site, public); err != nil {
 		return fmt.Errorf("render taxonomies: %w", err)
 	}
-	fmt.Println("完成")
-
-	// 5. Render archives
 	if err := b.renderArchives(site, public); err != nil {
 		return fmt.Errorf("render archives: %w", err)
 	}
+	fmt.Printf("完成 (%s)\n", time.Since(t).Round(time.Millisecond))
 
 	// 6. Generate search index
+	t = time.Now()
 	fmt.Print("  生成搜索索引 ... ")
 	if err := b.renderSearchIndex(site, public); err != nil {
 		return fmt.Errorf("search index: %w", err)
 	}
-	fmt.Println("完成")
+	fmt.Printf("完成 (%s)\n", time.Since(t).Round(time.Millisecond))
 
 	// 7. Copy static files
+	t = time.Now()
 	fmt.Print("  复制静态资源 ... ")
 	if err := b.copyStatic(public); err != nil {
 		return fmt.Errorf("copy static: %w", err)
 	}
-	fmt.Println("完成")
+	fmt.Printf("完成 (%s)\n", time.Since(t).Round(time.Millisecond))
 
 	// 8. Copy theme assets
+	t = time.Now()
 	fmt.Print("  复制主题资源 ... ")
 	if err := b.copyThemeAssets(public); err != nil {
 		return fmt.Errorf("copy theme assets: %w", err)
@@ -130,29 +139,32 @@ func (b *Builder) Build() error {
 	if err := b.copyThemeStatic(public); err != nil {
 		return fmt.Errorf("copy theme static: %w", err)
 	}
-	fmt.Println("完成")
+	fmt.Printf("完成 (%s)\n", time.Since(t).Round(time.Millisecond))
 
-		// 9. Render 404 page
-		fmt.Print("  生成 404 页面 ... ")
-		if err := b.render404(site, public); err != nil {
-			return fmt.Errorf("render 404: %w", err)
-		}
-		fmt.Println("完成")
+	// 9. Render 404 page
+	t = time.Now()
+	fmt.Print("  生成 404 页面 ... ")
+	if err := b.render404(site, public); err != nil {
+		return fmt.Errorf("render 404: %w", err)
+	}
+	fmt.Printf("完成 (%s)\n", time.Since(t).Round(time.Millisecond))
 
 	// 10. SEO files
 	if b.cfg.SEO.EnableSitemap {
+		t = time.Now()
 		fmt.Print("  生成 Sitemap ... ")
 		if err := b.writeSitemap(site, public); err != nil {
 			return fmt.Errorf("write sitemap: %w", err)
 		}
-		fmt.Println("完成")
+		fmt.Printf("完成 (%s)\n", time.Since(t).Round(time.Millisecond))
 	}
 	if b.cfg.SEO.EnableRobotsTXT {
+		t = time.Now()
 		fmt.Print("  生成 robots.txt ... ")
 		if err := b.writeRobotsTXT(public); err != nil {
 			return fmt.Errorf("write robots.txt: %w", err)
 		}
-		fmt.Println("完成")
+		fmt.Printf("完成 (%s)\n", time.Since(t).Round(time.Millisecond))
 	}
 
 	// 11. Update config hash in cache
@@ -160,7 +172,7 @@ func (b *Builder) Build() error {
 		b.cache.updateConfig(configPath)
 	}
 
-	fmt.Printf("\n✓ 构建完成 → %s\n", public)
+	fmt.Printf("\n✓ 构建完成 → %s (总耗时 %s)\n", public, time.Since(totalStart).Round(time.Millisecond))
 	return nil
 }
 
@@ -222,7 +234,6 @@ func (b *Builder) removeDeletedPage(path string) {
 		}
 	}
 }
-
 
 // render404 generates the 404.html page.
 func (b *Builder) render404(site *index.Site, public string) error {
