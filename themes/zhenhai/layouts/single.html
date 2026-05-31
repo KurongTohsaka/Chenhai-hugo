@@ -23,18 +23,21 @@
   {{.Page.Content | safeHTML}}
 </article>
 
-{{if or .Extra.seriesPrev .Extra.seriesNext}}
-<nav class="series-nav">
-  <span class="series-label">{{.Page.Series}} 系列</span>
-  <div class="series-links">
-    {{if .Extra.seriesPrev}}
-    <a class="series-link prev" href="{{.Extra.seriesPrev.Permalink}}">← {{.Extra.seriesPrev.Title}}</a>
+{{if .Extra.seriesPages}}
+<section class="series-playlist">
+  <h3 class="series-playlist-title">{{.Extra.seriesName}}（{{len .Extra.seriesPages}} 篇）</h3>
+  <ol class="series-playlist-list">
+    {{range $i, $p := .Extra.seriesPages}}
+    <li class="series-playlist-item{{if eq $i $.Extra.seriesIdx}} current{{end}}">
+      {{if eq $i $.Extra.seriesIdx}}
+      <span class="series-playlist-text">{{$p.Title}}</span>
+      {{else}}
+      <a class="series-playlist-link" href="{{$p.Permalink}}">{{$p.Title}}</a>
+      {{end}}
+    </li>
     {{end}}
-    {{if .Extra.seriesNext}}
-    <a class="series-link next" href="{{.Extra.seriesNext.Permalink}}">{{.Extra.seriesNext.Title}} →</a>
-    {{end}}
-  </div>
-</nav>
+  </ol>
+</section>
 {{end}}
 
 <!-- Prev/Next Post Navigation -->

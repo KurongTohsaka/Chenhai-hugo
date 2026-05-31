@@ -50,9 +50,9 @@ type TagCloudEntry struct {
 }
 
 // BuildSite processes all pages and builds the complete Site index.
-// Pages are sorted by date descending. Draft pages are excluded from
-// Categories, Tags, and Archives indices.
-func BuildSite(cfg *config.Config, pages []*content.Page) *Site {
+// Pages are sorted by date descending. When showDrafts is false, draft pages
+// are excluded from the Site entirely (Pages, Categories, Tags, Archives).
+func BuildSite(cfg *config.Config, pages []*content.Page, showDrafts bool) *Site {
 	// Sort by date descending
 	sort.Slice(pages, func(i, j int) bool {
 		return pages[i].Date.After(pages[j].Date)
@@ -60,7 +60,6 @@ func BuildSite(cfg *config.Config, pages []*content.Page) *Site {
 
 	site := &Site{
 		Config:     cfg,
-		Pages:      pages,
 		Categories: make(map[string][]*content.Page),
 		Tags:       make(map[string][]*content.Page),
 		Series:     make(map[string][]*content.Page),
@@ -70,9 +69,10 @@ func BuildSite(cfg *config.Config, pages []*content.Page) *Site {
 	}
 
 	for _, page := range pages {
-		if page.Draft || page.Layout != "" {
+		if (page.Draft && !showDrafts) || page.Layout != "" {
 			continue
 		}
+		site.Pages = append(site.Pages, page)
 
 		// Categories
 		if page.HasCategory() {
@@ -111,10 +111,16 @@ func BuildSite(cfg *config.Config, pages []*content.Page) *Site {
 		})
 	}
 
-	// Sort each series by date ascending
+	// Sort each series: Weight desc → date asc → title asc
 	for _, pages := range site.Series {
 		sort.Slice(pages, func(i, j int) bool {
-			return pages[i].Date.Before(pages[j].Date)
+			if pages[i].Weight != pages[j].Weight {
+				return pages[i].Weight > pages[j].Weight
+			}
+			if !pages[i].Date.Equal(pages[j].Date) {
+				return pages[i].Date.Before(pages[j].Date)
+			}
+			return pages[i].Title < pages[j].Title
 		})
 	}
 
@@ -184,11 +190,12 @@ func (s *Site) BuildTagCloud() []TagCloudEntry {
 	return entries
 }
 
-// PublishedPages returns all non-draft pages.
+// PublishedPages returns all published pages (excluding layout-only pages).
+// When showDrafts was true in BuildSite, drafts are included in this result.
 func (s *Site) PublishedPages() []*content.Page {
 	var result []*content.Page
 	for _, page := range s.Pages {
-		if !page.Draft && page.Layout == "" {
+		if page.Layout == "" {
 			result = append(result, page)
 		}
 	}

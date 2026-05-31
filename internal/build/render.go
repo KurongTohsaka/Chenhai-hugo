@@ -58,8 +58,11 @@ func (b *Builder) renderPages(site *index.Site, public string) error {
 		}
 		if page.Series != "" {
 			if seriesPages, ok := site.Series[page.Series]; ok {
+				pageData.Extra["seriesPages"] = seriesPages
+				pageData.Extra["seriesName"] = page.Series
 				for i, p := range seriesPages {
 					if p.FilePath == page.FilePath {
+						pageData.Extra["seriesIdx"] = i
 						if i > 0 {
 							pageData.Extra["seriesPrev"] = seriesPages[i-1]
 						}
