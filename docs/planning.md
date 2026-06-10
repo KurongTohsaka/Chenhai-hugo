@@ -98,6 +98,17 @@
 | perf | Google Fonts 从 CSS @import 改为 HTML link（非阻塞加载） |
 | fix | 分页器移动端换行（flex-wrap） |
 
+### v0.6.2 — AI 标记、Series、关于页完善
+
+| 编号 | 内容 |
+|------|------|
+| feat | AI 生成文章标记（front matter `ai_generated` + 紫色徽章） |
+| feat | Series 系列分类渲染（`renderSeries` 生成 `/series/` 聚合页） |
+| feat | 关于页完善：12 张镇海素材图按分类展示（立绘/换装/改造/皮肤/誓约） |
+| feat | 首页 Hero 图替换为镇海誓约日服预告 |
+| fix | 关于页 404 修复（Section 解析去 `.md` 扩展名） |
+| fix | Series 链接 404 修复（新增 `/series/` 分类页生成） |
+
 ---
 
 ## 当前问题
@@ -109,16 +120,18 @@
 
 ## 版本规划
 
-### v0.6.2 — AI 标记、Series、关于页完善
+### v0.6.3 — 待定
 
-| 编号 | 内容 |
+> 继续打磨体验，修复已知问题。
+
+| 任务 | 说明 |
 |------|------|
-| feat | AI 生成文章标记（front matter `ai_generated` + 紫色徽章） |
-| feat | Series 系列分类（首页标注 + `/series/` 聚合页） |
-| feat | 关于页完善：12 张镇海素材图按分类展示 |
-| feat | 首页 Hero 图替换为镇海誓约日服预告 |
-| fix | 关于页 404 修复（Section 解析去 `.md` 扩展名） |
-| fix | Series 链接 404 修复（新增 `renderSeries` 渲染） |
+| 搜索体验优化 | 模糊搜索准确率、结果排序、搜索历史 |
+| 移动端适配 | 浮动 TOC、分页器、代码块横向滚动优化 |
+| 构建错误提示 | 配置解析、Front Matter 错误时给出具体行号和修复建议 |
+| 图片懒加载优化 | 首屏图片 eager、折叠内容 lazy |
+| 暗色模式过渡 | 图片亮度调节、切换动画平滑化 |
+| about 页图片 | 点击放大 Lightbox 与 `target="_blank"` 冲突修复 |
 
 ### v0.7.0 — 内容创作增强
 
