@@ -68,6 +68,10 @@ func (b *Builder) collectPages() ([]*content.Page, error) {
 			parts := strings.SplitN(relPath, "/", 2)
 			if len(parts) > 0 {
 				page.Section = parts[0]
+				// If the file is directly under content/ (e.g., "about.md"), strip the .md extension
+				if len(parts) == 1 {
+					page.Section = strings.TrimSuffix(parts[0], ".md")
+				}
 			}
 
 			pages = append(pages, page)
@@ -111,6 +115,10 @@ func (b *Builder) collectPages() ([]*content.Page, error) {
 		parts := strings.SplitN(relPath, "/", 2)
 		if len(parts) > 0 {
 			page.Section = parts[0]
+			// If the file is directly under content/ (e.g., "about.md"), strip the .md extension
+			if len(parts) == 1 {
+				page.Section = strings.TrimSuffix(parts[0], ".md")
+			}
 		}
 
 		pages = append(pages, page)

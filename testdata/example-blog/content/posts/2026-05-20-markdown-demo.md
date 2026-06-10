@@ -3,6 +3,7 @@ title: "Markdown 功能演示"
 date: 2026-05-20
 categories: ["技术"]
 tags: ["Markdown", "演示"]
+series: "镇海开发日志"
 toc: true
 ---
 

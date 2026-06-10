@@ -6,6 +6,8 @@
     <h1 class="article-title">{{.Page.Title}}</h1>
     <div class="article-meta">
       <time datetime="{{.Page.Date.Format "2006-01-02"}}">{{.Page.Date.Format "2006-01-02"}}</time>
+      {{if .Page.AIGenerated}}<span class="ai-badge" title="AI 辅助生成">AI</span>{{end}}
+      {{if .Page.Series}}<span class="series-badge" title="系列"><a href="/series/{{.Page.Series}}/">{{.Page.Series}}</a></span>{{end}}
       {{if .Page.Categories}}
       <span class="separator">|</span>
       <span>in {{range $i, $cat := .Page.Categories}}{{if $i}}, {{end}}<a href="/categories/{{$cat}}/">{{$cat}}</a>{{end}}</span>

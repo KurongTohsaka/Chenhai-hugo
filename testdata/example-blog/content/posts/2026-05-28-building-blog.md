@@ -3,6 +3,7 @@ title: "镇海：从零到一的静态博客之路"
 date: 2026-05-28
 categories: ["技术", "Go"]
 tags: ["静态博客", "Go", "Hugo"]
+series: "镇海开发日志"
 slug: "building-blog"
 description: "为什么选择从零开发而非使用 Hugo"
 ---
