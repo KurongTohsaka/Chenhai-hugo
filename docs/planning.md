@@ -1,6 +1,6 @@
 # Chenhai 规划文档
 
-当前版本：**v0.6.1**（功能迭代）
+当前版本：**v0.6.2**（功能迭代）
 
 测试站点：**https://hekurong.github.io**
 
@@ -108,6 +108,17 @@
 ---
 
 ## 版本规划
+
+### v0.6.2 — AI 标记、Series、关于页完善
+
+| 编号 | 内容 |
+|------|------|
+| feat | AI 生成文章标记（front matter `ai_generated` + 紫色徽章） |
+| feat | Series 系列分类（首页标注 + `/series/` 聚合页） |
+| feat | 关于页完善：12 张镇海素材图按分类展示 |
+| feat | 首页 Hero 图替换为镇海誓约日服预告 |
+| fix | 关于页 404 修复（Section 解析去 `.md` 扩展名） |
+| fix | Series 链接 404 修复（新增 `renderSeries` 渲染） |
 
 ### v0.7.0 — 内容创作增强
 
