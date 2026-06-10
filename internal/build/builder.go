@@ -111,6 +111,7 @@ func (b *Builder) Build() error {
 	if err := b.renderTaxonomies(site, public); err != nil {
 		return fmt.Errorf("render taxonomies: %w", err)
 	}
+	if err := b.renderSeries(site, public); err != nil { return fmt.Errorf("render series: %w", err) }
 	if err := b.renderArchives(site, public); err != nil {
 		return fmt.Errorf("render archives: %w", err)
 	}

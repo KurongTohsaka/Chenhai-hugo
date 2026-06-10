@@ -53,3 +53,31 @@ func (b *Builder) renderTaxonomies(site *index.Site, public string) error {
 
 	return nil
 }
+
+// renderSeries renders series index and per-series listing pages.
+func (b *Builder) renderSeries(site *index.Site, public string) error {
+	if len(site.Series) == 0 {
+		return nil
+	}
+	seriesDir := filepath.Join(public, "series")
+
+	// Series index: /series/index.html
+	seriesIndexData := &theme.TemplateData{
+		Site:   site,
+		Page:   &content.Page{Title: "Series"},
+		Config: b.cfg,
+		Extra:  map[string]interface{}{"title": "Series"},
+	}
+	if err := b.renderToFile(seriesIndexData, filepath.Join(seriesDir, "index.html"), "taxonomy.html"); err != nil {
+		return fmt.Errorf("series index: %w", err)
+	}
+
+	// Individual series pages with pagination: /series/<name>/
+	for name, pages := range site.Series {
+		spd := filepath.Join(seriesDir, name)
+		if err := b.renderPaginatedListPages(name, pages, spd, "list.html", site, public); err != nil {
+			return fmt.Errorf("series %q: %w", name, err)
+		}
+	}
+	return nil
+}
