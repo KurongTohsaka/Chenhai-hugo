@@ -61,7 +61,7 @@ type fmRaw struct {
 func parseFM(data string, page *Page) error {
 	var raw fmRaw
 	if err := yaml.Unmarshal([]byte(data), &raw); err != nil {
-		return err
+		return fmt.Errorf("解析 YAML 失败: %w\n  → 提示: 检查缩进是否为空格（非 Tab），布尔值是否为 true/false", err)
 	}
 
 	// Check for unknown front matter keys

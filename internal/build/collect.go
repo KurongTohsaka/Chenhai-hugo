@@ -57,7 +57,7 @@ func (b *Builder) collectPages() ([]*content.Page, error) {
 		if isUnchanged {
 			page, _, err := content.ParseFrontMatter(raw)
 			if err != nil {
-				return fmt.Errorf("parse %s: %w", path, err)
+				return fmt.Errorf("解析 Front Matter 失败: %s\n  → 错误: %w\n  → 检查 YAML 语法是否正确", path, err)
 			}
 
 			page.Content = "" // marker: skip template rendering, output already exists
@@ -97,7 +97,7 @@ func (b *Builder) collectPages() ([]*content.Page, error) {
 
 		page, body, err := content.ParseFrontMatter(raw)
 		if err != nil {
-			return fmt.Errorf("parse %s: %w", path, err)
+			return fmt.Errorf("解析 Front Matter 失败: %s\n  → 错误: %w\n  → 检查 YAML 语法是否正确", path, err)
 		}
 
 		html, err := b.renderer.RenderHTML(body)

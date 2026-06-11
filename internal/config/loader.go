@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 
 	"gopkg.in/yaml.v3"
@@ -16,7 +17,7 @@ func Load(path string) (*Config, error) {
 		return nil, err
 	}
 	if err := yaml.Unmarshal(data, cfg); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("config.yaml 解析失败: %w\n  → 提示: 检查 YAML 语法，确保缩进一致", err)
 	}
 	return cfg, nil
 }
