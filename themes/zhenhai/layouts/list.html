@@ -15,6 +15,10 @@
   {{end}}
 {{end}}
 {{if eq .Extra.title "Archives"}}
+  {{/* Render archive heatmap (E13) */}}
+  {{if .Extra.heatmapJSON}}
+  <div class="archive-heatmap" id="archive-heatmap" data-heatmap='{{.Extra.heatmapJSON}}'></div>
+  {{end}}
   {{/* Render archive timeline */}}
   {{$archives := .Site.Archives}}
   <div class="archive-timeline">

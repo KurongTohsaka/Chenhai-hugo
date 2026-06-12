@@ -604,6 +604,7 @@
     initTagSort();
     initKeyboardShortcuts();
     initCodeToolbar();
+    initHeatmap();
 
     // Delay Mermaid init slightly to ensure DOM is fully rendered
     setTimeout(initMermaid, 100);

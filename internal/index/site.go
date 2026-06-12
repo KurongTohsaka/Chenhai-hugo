@@ -194,6 +194,26 @@ func (s *Site) BuildTagCloud() []TagCloudEntry {
 	return entries
 }
 
+// DailyCount represents a single day with a post count for the heatmap.
+type DailyCount struct {
+	Date  string `json:"date"` // "2006-01-02"
+	Count int    `json:"count"`
+}
+
+// BuildHeatmap returns daily post counts for all days, sorted by date ascending.
+func (s *Site) BuildHeatmap() []DailyCount {
+	dayCount := make(map[string]int)
+	for _, p := range s.PublishedPages() {
+		dayCount[p.Date.Format("2006-01-02")]++
+	}
+	var result []DailyCount
+	for d, c := range dayCount {
+		result = append(result, DailyCount{Date: d, Count: c})
+	}
+	sort.Slice(result, func(i, j int) bool { return result[i].Date < result[j].Date })
+	return result
+}
+
 // PublishedPages returns all published pages (excluding layout-only pages).
 // When showDrafts was true in BuildSite, drafts are included in this result.
 func (s *Site) PublishedPages() []*content.Page {
