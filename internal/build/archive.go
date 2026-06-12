@@ -1,7 +1,6 @@
 package build
 
 import (
-	"encoding/json"
 	"path/filepath"
 
 	"github.com/KurongTohsaka/chenhai-hugo/internal/content"
@@ -18,10 +17,6 @@ func (b *Builder) renderArchives(site *index.Site, public string) error {
 		Page:   &content.Page{Title: "Archives"},
 		Config: b.cfg,
 		Extra:  map[string]interface{}{"title": "Archives", "pages": published},
-	}
-	if hm := site.BuildHeatmap(); len(hm.Data) > 0 {
-		b, _ := json.Marshal(hm)
-		archiveData.Extra["heatmapJSON"] = string(b)
 	}
 	return b.renderToFile(archiveData, filepath.Join(archiveDir, "index.html"), "list.html")
 }

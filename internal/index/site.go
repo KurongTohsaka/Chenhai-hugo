@@ -194,28 +194,6 @@ func (s *Site) BuildTagCloud() []TagCloudEntry {
 	return entries
 }
 
-// HeatmapData holds all heatmap data for the archive page.
-type HeatmapData struct {
-	Years []int            `json:"years"`
-	Data  map[string]int   `json:"data"` // "2006-01-02" -> count
-}
-
-// BuildHeatmap returns heatmap data for all years with posts.
-func (s *Site) BuildHeatmap() HeatmapData {
-	dayCount := make(map[string]int)
-	yearsSet := make(map[int]bool)
-	for _, p := range s.PublishedPages() {
-		ds := p.Date.Format("2006-01-02")
-		dayCount[ds]++
-		yearsSet[p.Date.Year()] = true
-	}
-	var years []int
-	for y := range yearsSet {
-		years = append(years, y)
-	}
-	sort.Slice(years, func(i, j int) bool { return years[i] > years[j] })
-	return HeatmapData{Years: years, Data: dayCount}
-}
 
 // PublishedPages returns all published pages (excluding layout-only pages).
 // When showDrafts was true in BuildSite, drafts are included in this result.
