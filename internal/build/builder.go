@@ -14,6 +14,9 @@ import (
 	"github.com/KurongTohsaka/chenhai-hugo/internal/theme"
 )
 
+// cachedEngine persists across Builder instances for incremental build engine reuse.
+var cachedEngine *theme.Engine
+
 // Builder orchestrates the full site build pipeline.
 type Builder struct {
 	cfg          *config.Config
@@ -24,9 +27,6 @@ type Builder struct {
 	showDrafts   bool
 	cache        *BuildCache
 	skippedPaths map[string]bool // content file paths skipped because unchanged
-
-	// P2: cached engine for incremental build reuse
-	cachedEngine *theme.Engine
 }
 
 // New creates a new Builder.
@@ -76,11 +76,11 @@ func (b *Builder) Build() error {
 
 	// 1. Collect all pages from content/
 	// P2: reuse cached engine when templates haven't changed
-	if !fullRebuild && b.cachedEngine != nil {
-		b.engine = b.cachedEngine
+	if !fullRebuild && cachedEngine != nil {
+		b.engine = cachedEngine
 		fmt.Println("  (复用模板缓存)")
 	} else {
-		b.cachedEngine = b.engine
+		cachedEngine = b.engine
 	}
 
 	b.skippedPaths = make(map[string]bool)
