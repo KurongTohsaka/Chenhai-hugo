@@ -24,6 +24,9 @@ type Builder struct {
 	showDrafts   bool
 	cache        *BuildCache
 	skippedPaths map[string]bool // content file paths skipped because unchanged
+
+	// P2: cached engine for incremental build reuse
+	cachedEngine *theme.Engine
 }
 
 // New creates a new Builder.
@@ -72,6 +75,14 @@ func (b *Builder) Build() error {
 	}
 
 	// 1. Collect all pages from content/
+	// P2: reuse cached engine when templates haven't changed
+	if !fullRebuild && b.cachedEngine != nil {
+		b.engine = b.cachedEngine
+		fmt.Println("  (复用模板缓存)")
+	} else {
+		b.cachedEngine = b.engine
+	}
+
 	b.skippedPaths = make(map[string]bool)
 	t = time.Now()
 	fmt.Print("  扫描 content/ ... ")
