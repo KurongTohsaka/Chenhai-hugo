@@ -14,6 +14,8 @@
 <ul class="post-cards">
   {{range $pages}}
   <li class="post-card">
+    {{if .Pinned}}<span class="pinned-badge" title="置顶">📌 置顶</span>{{end}}
+    {{if .Cover}}<div class="post-card-cover"><img src="{{.Cover}}" alt="" loading="lazy"></div>{{end}}
     <h2 class="post-card-title"><a href="{{.Permalink}}">{{.Title}}</a>{{if .AIGenerated}}<span class="ai-badge" title="AI 辅助生成">AI</span>{{end}}</h2>
     <div class="post-card-meta">
       <time datetime="{{.Date.Format "2006-01-02"}}">{{.Date.Format "2006-01-02"}}</time>

@@ -55,6 +55,7 @@
   <ul class="item-list">
     {{range $pages}}
     <li>
+      {{if .Pinned}}<span class="pinned-badge" title="置顶">📌</span>{{end}}
       <span class="item-list-title"><a href="{{.Permalink}}">{{.Title}}</a></span>
       <span class="item-list-date">{{.Date.Format "2006-01-02"}}</span>
     </li>
