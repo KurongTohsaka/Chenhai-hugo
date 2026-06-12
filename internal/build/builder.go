@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"sync"
+
 	"github.com/KurongTohsaka/chenhai-hugo/internal/config"
 	"github.com/KurongTohsaka/chenhai-hugo/internal/content"
 	"github.com/KurongTohsaka/chenhai-hugo/internal/imagehost"
@@ -15,7 +17,10 @@ import (
 )
 
 // cachedEngine persists across Builder instances for incremental build engine reuse.
-var cachedEngine *theme.Engine
+var (
+	cachedEngine   *theme.Engine
+	cachedEngineMu sync.Mutex
+)
 
 // Builder orchestrates the full site build pipeline.
 type Builder struct {
@@ -76,11 +81,14 @@ func (b *Builder) Build() error {
 
 	// 1. Collect all pages from content/
 	// P2: reuse cached engine when templates haven't changed
+	cachedEngineMu.Lock()
 	if !fullRebuild && cachedEngine != nil {
 		b.engine = cachedEngine
+		cachedEngineMu.Unlock()
 		fmt.Println("  (复用模板缓存)")
 	} else {
 		cachedEngine = b.engine
+		cachedEngineMu.Unlock()
 	}
 
 	b.skippedPaths = make(map[string]bool)
