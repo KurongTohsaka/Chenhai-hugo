@@ -540,6 +540,41 @@
   /*  Tag Cloud Sort (E14)                                             */
   /* ================================================================ */
 
+  /* ================================================================ */
+  /*  Archive Heatmap (E13)                                            */
+  /* ================================================================ */
+
+  function initHeatmap() {
+    var container = document.getElementById('archive-heatmap');
+    if (!container) return;
+    var raw = container.dataset.heatmap;
+    if (!raw) return;
+    var data;
+    try { data = JSON.parse(raw); } catch (e) { return; }
+    if (!data.length) { container.style.display = 'none'; return; }
+    var countMap = {};
+    data.forEach(function (d) { countMap[d.date] = d.count; });
+    var today = new Date();
+    var start = new Date(today);
+    start.setFullYear(start.getFullYear() - 1);
+    var grid = document.createElement('div');
+    grid.className = 'heatmap-grid';
+    for (var d = new Date(start); d <= today; d.setDate(d.getDate() + 1)) {
+      var ds = d.toISOString().slice(0, 10);
+      var cell = document.createElement('div');
+      cell.className = 'heatmap-cell';
+      var c = countMap[ds] || 0;
+      if (c > 0) cell.dataset.count = Math.min(c, 5);
+      cell.title = ds + ': ' + c + ' 篇';
+      grid.appendChild(cell);
+    }
+    container.appendChild(grid);
+    var legend = document.createElement('div');
+    legend.className = 'heatmap-legend';
+    legend.innerHTML = '少 <span style="background:var(--color-border-light)"></span> <span style="background:#9be9a8"></span> <span style="background:#40c463"></span> <span style="background:#30a14e"></span> <span style="background:#216e39"></span> <span style="background:#0e4429"></span> 多';
+    container.appendChild(legend);
+  }
+
   function initTagSort() {
     var bar = document.querySelector('.tag-sort-bar');
     if (!bar) return;
