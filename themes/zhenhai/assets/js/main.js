@@ -414,6 +414,7 @@
     initArchiveToggle();
     initMobileMenu();
     initReadingProgress();
+    initSettingsPanel();
 
     // Delay Mermaid init slightly to ensure DOM is fully rendered
     setTimeout(initMermaid, 100);
@@ -448,3 +449,113 @@
     }
   });
 })();
+
+  /* ================================================================ */
+  /*  Settings Panel (E1/E2/E3)                                       */
+  /* ================================================================ */
+
+  function initSettingsPanel() {
+    var btn = document.getElementById('settings-btn');
+    var panel = document.getElementById('settings-panel');
+    var close = document.getElementById('settings-close');
+    if (!btn || !panel) return;
+
+    function open() {
+      panel.classList.add('active');
+      panel.setAttribute('aria-hidden', 'false');
+    }
+    function closeFn() {
+      panel.classList.remove('active');
+      panel.setAttribute('aria-hidden', 'true');
+    }
+
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      panel.classList.contains('active') ? closeFn() : open();
+    });
+    if (close) close.addEventListener('click', closeFn);
+
+    // Close on outside click
+    document.addEventListener('click', function (e) {
+      if (panel.classList.contains('active') &&
+          !panel.contains(e.target) &&
+          e.target !== btn) {
+        closeFn();
+      }
+    });
+
+    // Close on Escape
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && panel.classList.contains('active')) {
+        closeFn();
+      }
+    });
+
+    // Hide dark level settings when in light mode
+    var darkGroup = document.getElementById('dark-level-group');
+    function updateDarkLevelVisibility() {
+      if (darkGroup) {
+        darkGroup.style.display = document.body.classList.contains('dark') ? '' : 'none';
+      }
+    }
+    updateDarkLevelVisibility();
+    document.addEventListener('zhenhai-theme-change', updateDarkLevelVisibility);
+
+    // Load saved settings on init
+    ['font-size', 'reading-width', 'dark-level'].forEach(function (key) {
+      var val = localStorage.getItem('zhenhai-' + key);
+      if (val) {
+        applySetting(key, val, false);
+      }
+    });
+
+    // Bind option buttons
+    panel.querySelectorAll('.settings-options').forEach(function (group) {
+      var key = group.dataset.setting;
+      group.querySelectorAll('.setting-option').forEach(function (opt) {
+        opt.addEventListener('click', function () {
+          group.querySelectorAll('.setting-option').forEach(function (o) { o.classList.remove('active'); });
+          opt.classList.add('active');
+          var val = opt.dataset.value;
+          localStorage.setItem('zhenhai-' + key, val);
+          applySetting(key, val, true);
+        });
+      });
+    });
+  }
+
+  function applySetting(key, val, updateUI) {
+    if (key === 'font-size') {
+      document.documentElement.setAttribute('data-font-size', val);
+      if (updateUI) {
+        var group = document.querySelector('[data-setting="font-size"]');
+        if (group) {
+          group.querySelectorAll('.setting-option').forEach(function (o) {
+            o.classList.toggle('active', o.dataset.value === val);
+          });
+        }
+      }
+    }
+    if (key === 'reading-width') {
+      document.documentElement.setAttribute('data-reading-width', val);
+      if (updateUI) {
+        var group = document.querySelector('[data-setting="reading-width"]');
+        if (group) {
+          group.querySelectorAll('.setting-option').forEach(function (o) {
+            o.classList.toggle('active', o.dataset.value === val);
+          });
+        }
+      }
+    }
+    if (key === 'dark-level') {
+      document.documentElement.setAttribute('data-dark-level', val);
+      if (updateUI) {
+        var group = document.querySelector('[data-setting="dark-level"]');
+        if (group) {
+          group.querySelectorAll('.setting-option').forEach(function (o) {
+            o.classList.toggle('active', o.dataset.value === val);
+          });
+        }
+      }
+    }
+  }

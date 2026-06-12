@@ -2672,3 +2672,107 @@ body.dark .mermaid img {
   text-align: center;
   line-height: 1.3;
 }
+
+/* =================================================================== */
+/*  Settings Panel (E1/E2/E3)                                          */
+/* =================================================================== */
+.settings-btn {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  color: var(--color-text);
+  padding: 0 0.5rem;
+  line-height: 1;
+}
+.settings-btn:hover { color: var(--color-link); }
+
+.settings-panel {
+  position: fixed;
+  right: -320px;
+  top: 0;
+  width: 280px;
+  height: 100vh;
+  background: var(--color-bg-card);
+  border-left: 1px solid var(--color-border);
+  z-index: 2000;
+  transition: right var(--transition-normal);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-lg);
+  overflow-y: auto;
+}
+.settings-panel.active { right: 0; }
+
+.settings-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+
+.settings-close {
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  padding: 0;
+  line-height: 1;
+}
+.settings-close:hover { color: var(--color-text); }
+
+.settings-group {
+  margin-bottom: 1.25rem;
+}
+.settings-group label {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  margin-bottom: 0.4rem;
+}
+
+.settings-options {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.setting-option {
+  padding: 0.35em 0.75em;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all var(--transition-fast);
+  font-family: var(--font-ui);
+}
+.setting-option:hover { border-color: var(--color-link); }
+.setting-option.active {
+  background: var(--color-link);
+  color: #fff;
+  border-color: var(--color-link);
+}
+
+/* E1: Font size via data attribute */
+[data-font-size="small"] { --font-size-base: 15px; }
+[data-font-size="medium"] { --font-size-base: 17px; }
+[data-font-size="large"] { --font-size-base: 19px; }
+body { font-size: var(--font-size-base, 17px); }
+
+/* E2: Reading width via data attribute */
+[data-reading-width="narrow"] { --content-max-width: 680px; }
+[data-reading-width="wide"] { --content-max-width: 95%; }
+
+/* E3: Dark mode brightness levels */
+body.dark[data-dark-level="deep"] {
+  --color-bg: #111115;
+  --color-bg-card: #1a1a20;
+  --color-bg-alt: #18181e;
+}
+body.dark[data-dark-level="medium"] {
+  /* medium is the default dark mode — no change needed */
+}
+/* soft is the default already */
