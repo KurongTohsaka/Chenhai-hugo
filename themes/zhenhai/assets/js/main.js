@@ -479,6 +479,64 @@
   }
 
   /* ================================================================ */
+  /*  Code Toolbar (E9) — line numbers & word wrap toggle              */
+  /* ================================================================ */
+
+  function initCodeToolbar() {
+    var lineVisible = localStorage.getItem('zhenhai-code-lines') !== 'hidden';
+    var wrapEnabled = localStorage.getItem('zhenhai-code-wrap') === 'enabled';
+
+    applyCodeSettings(lineVisible, wrapEnabled);
+
+    // Add toolbar to each code wrapper
+    document.querySelectorAll('.code-wrapper, .article-content pre.chroma').forEach(function (wrapper) {
+      if (!wrapper.classList.contains('code-wrapper') && wrapper.closest('.code-wrapper')) return;
+      if (wrapper.querySelector('.code-toolbar')) return;
+
+      var toolbar = document.createElement('div');
+      toolbar.className = 'code-toolbar';
+
+      var lineBtn = document.createElement('button');
+      lineBtn.className = 'code-toolbar-btn' + (lineVisible ? ' active' : '');
+      lineBtn.textContent = '行号';
+      lineBtn.addEventListener('click', function () {
+        lineVisible = !lineVisible;
+        localStorage.setItem('zhenhai-code-lines', lineVisible ? 'visible' : 'hidden');
+        applyCodeSettings(lineVisible, wrapEnabled);
+        syncCodeToolbarBtns();
+      });
+      toolbar.appendChild(lineBtn);
+
+      var wrapBtn = document.createElement('button');
+      wrapBtn.className = 'code-toolbar-btn' + (wrapEnabled ? ' active' : '');
+      wrapBtn.textContent = '换行';
+      wrapBtn.addEventListener('click', function () {
+        wrapEnabled = !wrapEnabled;
+        localStorage.setItem('zhenhai-code-wrap', wrapEnabled ? 'enabled' : 'disabled');
+        applyCodeSettings(lineVisible, wrapEnabled);
+        syncCodeToolbarBtns();
+      });
+      toolbar.appendChild(wrapBtn);
+
+      wrapper.insertBefore(toolbar, wrapper.firstChild);
+    });
+  }
+
+  function applyCodeSettings(lineV, wrapV) {
+    document.documentElement.classList.toggle('code-no-lines', !lineV);
+    document.documentElement.classList.toggle('code-wrap', wrapV);
+  }
+
+  function syncCodeToolbarBtns() {
+    var lineV = localStorage.getItem('zhenhai-code-lines') !== 'hidden';
+    var wrapV = localStorage.getItem('zhenhai-code-wrap') === 'enabled';
+    document.querySelectorAll('.code-toolbar-btn').forEach(function (btn) {
+      if (btn.textContent === '行号') btn.classList.toggle('active', lineV);
+      if (btn.textContent === '换行') btn.classList.toggle('active', wrapV);
+    });
+  }
+
+  /* ================================================================ */
   /*  8. Initialization on DOM ready                                  */
   /* ================================================================ */
 
@@ -506,6 +564,7 @@
     initSettingsPanel();
     initTagFilter();
     initKeyboardShortcuts();
+    initCodeToolbar();
 
     // Delay Mermaid init slightly to ensure DOM is fully rendered
     setTimeout(initMermaid, 100);
