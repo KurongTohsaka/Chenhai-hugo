@@ -132,9 +132,10 @@
 
 | 编号 | 内容 |
 |------|------|
-| fix | 搜索框右侧可点击（input-wrap flex 布局修复） |
-| fix | 历史项删除按钮与文字重叠（绝对定位，hover 显现） |
-| fix | 历史项长文本溢出省略（text-overflow: ellipsis） |
+| fix | 搜索框输入区全宽可点击（icon 绝对定位 + flex: 1 1 0%） |
+| fix | 历史项 SVG 删除图标（currentColor 自适应亮暗，hover 显现） |
+| fix | CSS 语法错误修复（多余 `}` 导致后续规则全部失效） |
+| fix | 搜索框右侧按钮不遮挡输入区域 |
 
 ---
 
