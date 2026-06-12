@@ -19,8 +19,8 @@ func (b *Builder) renderArchives(site *index.Site, public string) error {
 		Config: b.cfg,
 		Extra:  map[string]interface{}{"title": "Archives", "pages": published},
 	}
-	if heatmap := site.BuildHeatmap(); len(heatmap) > 0 {
-		b, _ := json.Marshal(heatmap)
+	if hm := site.BuildHeatmap(); len(hm.Data) > 0 {
+		b, _ := json.Marshal(hm)
 		archiveData.Extra["heatmapJSON"] = string(b)
 	}
 	return b.renderToFile(archiveData, filepath.Join(archiveDir, "index.html"), "list.html")
