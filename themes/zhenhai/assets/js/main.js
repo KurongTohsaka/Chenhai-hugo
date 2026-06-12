@@ -537,6 +537,44 @@
   }
 
   /* ================================================================ */
+  /*  Tag Cloud Sort (E14)                                             */
+  /* ================================================================ */
+
+  function initTagSort() {
+    var bar = document.querySelector('.tag-sort-bar');
+    if (!bar) return;
+    var cloud = document.querySelector('.tag-cloud');
+    if (!cloud) return;
+
+    // Collect tag data from DOM
+    function getItems() {
+      return Array.from(cloud.querySelectorAll('.tag-cloud-item')).map(function (el) {
+        return {
+          el: el,
+          name: (el.querySelector('.tag-cloud-name') || {}).textContent || '',
+          count: parseInt(el.dataset.count) || 0
+        };
+      });
+    }
+
+    bar.querySelectorAll('.tag-sort-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        bar.querySelectorAll('.tag-sort-btn').forEach(function (b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+
+        var sort = btn.dataset.sort;
+        var items = getItems();
+        if (sort === 'name') {
+          items.sort(function (a, b) { return a.name.localeCompare(b.name, 'zh'); });
+        } else if (sort === 'count') {
+          items.sort(function (a, b) { return b.count - a.count; });
+        }
+        items.forEach(function (item) { cloud.appendChild(item.el); });
+      });
+    });
+  }
+
+  /* ================================================================ */
   /*  8. Initialization on DOM ready                                  */
   /* ================================================================ */
 
@@ -563,6 +601,7 @@
     initReadingProgress();
     initSettingsPanel();
     initTagFilter();
+    initTagSort();
     initKeyboardShortcuts();
     initCodeToolbar();
 

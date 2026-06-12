@@ -7,10 +7,15 @@
   {{/* Tag cloud */}}
   {{$cloud := .Site.BuildTagCloud}}
   {{if $cloud}}
+  <div class="tag-sort-bar">
+    <span style="font-size:0.85rem;color:var(--color-text-secondary)">排序：</span>
+    <button class="tag-sort-btn active" data-sort="name">按名称</button>
+    <button class="tag-sort-btn" data-sort="count">按文章数</button>
+  </div>
   {{$descs := .Extra.tagDescriptions}}
   <div class="tag-cloud">
     {{range $cloud}}
-    <a class="tag-cloud-item tag-size-{{.Size}}" href="/tags/{{.Name}}/">
+    <a class="tag-cloud-item tag-size-{{.Size}}" href="/tags/{{.Name}}/" data-name="{{.Name}}" data-count="{{.Count}}">
       <span class="tag-cloud-name">{{.Name}}</span>
       <small>({{.Count}})</small>
       {{if $descs}}{{if index $descs .Name}}<span class="tag-cloud-desc">{{index $descs .Name}}</span>{{end}}{{end}}
