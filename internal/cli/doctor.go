@@ -8,6 +8,7 @@ import (
 
 	"github.com/KurongTohsaka/chenhai-hugo/internal/config"
 	"github.com/KurongTohsaka/chenhai-hugo/internal/content"
+	"github.com/KurongTohsaka/chenhai-hugo/themes/zhenhai"
 	"github.com/spf13/cobra"
 )
 
@@ -113,8 +114,14 @@ func ExecuteDoctor(root string) error {
 				break
 			}
 		}
+		// Check embedded zhenhai theme as fallback
 		if !found {
-			fmt.Printf("⚠ 模板 %s 未在站点 layouts/ 或主题中找到（将使用嵌入模板）\n", name)
+			if _, err := zhenhai.FS.ReadFile("layouts/" + name); err == nil {
+				found = true
+			}
+		}
+		if !found {
+			fmt.Printf("⚠ 模板 %s 未找到\n", name)
 			warnings++
 			missingTemplates++
 		}
