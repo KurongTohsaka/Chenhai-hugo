@@ -2816,3 +2816,66 @@ body.dark[data-dark-level="medium"] {
   color: #fff;
   border-color: var(--color-link);
 }
+
+/* Keyboard shortcuts panel (E8) */
+.shortcuts-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  background: rgba(0, 0, 0, 0.6);
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.shortcuts-panel.active { display: flex; }
+.shortcuts-panel-inner {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 2rem;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: var(--shadow-lg);
+}
+.shortcuts-panel-inner h3 { margin-top: 0; }
+.shortcuts-panel-inner table { width: 100%; border-collapse: collapse; }
+.shortcuts-panel-inner td { padding: 0.4em 0; vertical-align: middle; }
+.shortcuts-panel-inner td:first-child { width: 80px; text-align: right; padding-right: 1rem; }
+.shortcuts-panel-inner kbd {
+  background: var(--color-code-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 3px;
+  padding: 0.15em 0.4em;
+  font-size: 0.8rem;
+  font-family: var(--font-mono);
+  white-space: nowrap;
+}
+
+/* Code block toolbar (E9) */
+.code-no-lines .code-ln { display: none !important; }
+.code-wrap pre,
+.code-wrap .chroma { white-space: pre-wrap !important; word-break: break-all !important; }
+
+.code-toolbar {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  margin-bottom: 0.3rem;
+}
+.code-toolbar-btn {
+  font-size: 0.75rem;
+  padding: 0.15em 0.5em;
+  border: 1px solid var(--color-border);
+  border-radius: 3px;
+  background: var(--color-bg);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-family: var(--font-ui);
+  transition: all var(--transition-fast);
+}
+.code-toolbar-btn:hover { border-color: var(--color-link); }
+.code-toolbar-btn.active {
+  background: var(--color-link);
+  color: #fff;
+  border-color: var(--color-link);
+}

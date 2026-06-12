@@ -417,6 +417,68 @@
   }
 
   /* ================================================================ */
+  /*  Keyboard Shortcuts (E8)                                          */
+  /* ================================================================ */
+
+  function initKeyboardShortcuts() {
+    var shortcutsPanel = document.getElementById('shortcuts-panel');
+    if (!shortcutsPanel) return;
+
+    var ghTimer = null;
+
+    document.addEventListener('keydown', function (e) {
+      // Don't trigger in inputs
+      var tag = e.target.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target.isContentEditable) return;
+
+      // ? toggle shortcuts (no modifier)
+      if (e.key === '?' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault();
+        shortcutsPanel.classList.toggle('active');
+        return;
+      }
+
+      // Esc close
+      if (e.key === 'Escape' && shortcutsPanel.classList.contains('active')) {
+        shortcutsPanel.classList.remove('active');
+        return;
+      }
+
+      // j/k navigation (only on single post pages)
+      if (e.key === 'j' && !e.ctrlKey && !e.metaKey) {
+        var next = document.querySelector('.post-nav-link.next');
+        if (next) { e.preventDefault(); next.click(); }
+      }
+      if (e.key === 'k' && !e.ctrlKey && !e.metaKey) {
+        var prev = document.querySelector('.post-nav-link.prev');
+        if (prev) { e.preventDefault(); prev.click(); }
+      }
+
+      // g + h → home, g + t → top (vim-style)
+      if (e.key === 'g' && !e.ctrlKey && !e.metaKey) {
+        if (ghTimer) clearTimeout(ghTimer);
+        ghTimer = setTimeout(function () { ghTimer = null; }, 500);
+        return;
+      }
+      if (e.key === 'h' && ghTimer) {
+        e.preventDefault();
+        window.location.href = '/';
+        ghTimer = null;
+      }
+      if (e.key === 't' && ghTimer) {
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        ghTimer = null;
+      }
+    });
+
+    // Close shortcuts on click outside
+    shortcutsPanel.addEventListener('click', function (e) {
+      if (e.target === shortcutsPanel) shortcutsPanel.classList.remove('active');
+    });
+  }
+
+  /* ================================================================ */
   /*  8. Initialization on DOM ready                                  */
   /* ================================================================ */
 
@@ -443,6 +505,7 @@
     initReadingProgress();
     initSettingsPanel();
     initTagFilter();
+    initKeyboardShortcuts();
 
     // Delay Mermaid init slightly to ensure DOM is fully rendered
     setTimeout(initMermaid, 100);
