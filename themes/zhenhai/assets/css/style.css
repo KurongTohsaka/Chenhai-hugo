@@ -2776,3 +2776,38 @@ body.dark[data-dark-level="medium"] {
   /* medium is the default dark mode — no change needed */
 }
 /* soft is the default already */
+
+/* ----------------------------------------------------------------- */
+/*  E5: Tag filter bar on homepage                                     */
+/* ----------------------------------------------------------------- */
+.tag-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 1.5rem 0;
+  justify-content: center;
+}
+
+.tag-filter-btn {
+  padding: 0.25em 0.75em;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  background: var(--color-bg);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all var(--transition-fast);
+  font-family: var(--font-ui);
+  white-space: nowrap;
+}
+
+.tag-filter-btn:hover {
+  border-color: var(--color-link);
+  color: var(--color-link);
+}
+
+.tag-filter-btn.active {
+  background: var(--color-link);
+  color: #fff;
+  border-color: var(--color-link);
+}

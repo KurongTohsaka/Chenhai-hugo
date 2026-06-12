@@ -390,6 +390,33 @@
   }
 
   /* ================================================================ */
+  /*  Tag Filter Bar (E5)                                              */
+  /* ================================================================ */
+
+  function initTagFilter() {
+    var bar = document.querySelector('.tag-filter-bar');
+    if (!bar) return;
+
+    bar.querySelectorAll('.tag-filter-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        bar.querySelectorAll('.tag-filter-btn').forEach(function (b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+
+        var tag = btn.dataset.tag;
+        document.querySelectorAll('.post-card').forEach(function (card) {
+          if (tag === '*') {
+            card.style.display = '';
+            return;
+          }
+          var tagEls = card.querySelectorAll('.post-card-tags .tag');
+          var hasTag = Array.from(tagEls).some(function (t) { return t.textContent.trim() === tag; });
+          card.style.display = hasTag ? '' : 'none';
+        });
+      });
+    });
+  }
+
+  /* ================================================================ */
   /*  8. Initialization on DOM ready                                  */
   /* ================================================================ */
 
@@ -415,6 +442,7 @@
     initMobileMenu();
     initReadingProgress();
     initSettingsPanel();
+    initTagFilter();
 
     // Delay Mermaid init slightly to ensure DOM is fully rendered
     setTimeout(initMermaid, 100);

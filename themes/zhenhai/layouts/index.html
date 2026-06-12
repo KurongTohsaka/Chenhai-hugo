@@ -9,6 +9,16 @@
   </div>
 </div>
 
+{{$allTags := .Site.Tags}}
+{{if $allTags}}
+<div class="tag-filter-bar">
+  <button class="tag-filter-btn active" data-tag="*">全部</button>
+  {{range $tag, $_ := $allTags}}
+  <button class="tag-filter-btn" data-tag="{{$tag}}">{{$tag}}</button>
+  {{end}}
+</div>
+{{end}}
+
 {{$pages := .Extra.pages}}
 {{if $pages}}
 <ul class="post-cards">
