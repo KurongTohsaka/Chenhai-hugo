@@ -3,7 +3,22 @@
   <h1 class="page-title">{{.Extra.title}}</h1>
 </div>
 
+{{if .Extra.tagStats}}
+  {{$stats := index .Extra.tagStats .Extra.title}}
+  {{if $stats.Count}}
+  <p class="taxonomy-stats">共 {{$stats.Count}} 篇，最近更新：{{$stats.LastUpdate}}</p>
+  {{end}}
+{{else if .Extra.categoryStats}}
+  {{$stats := index .Extra.categoryStats .Extra.title}}
+  {{if $stats.Count}}
+  <p class="taxonomy-stats">共 {{$stats.Count}} 篇，最近更新：{{$stats.LastUpdate}}</p>
+  {{end}}
+{{end}}
 {{if eq .Extra.title "Archives"}}
+  {{/* Render archive heatmap (E13) */}}
+  {{if .Extra.heatmapJSON}}
+  <div class="archive-heatmap" id="archive-heatmap" data-heatmap='{{.Extra.heatmapJSON}}'></div>
+  {{end}}
   {{/* Render archive timeline */}}
   {{$archives := .Site.Archives}}
   <div class="archive-timeline">
@@ -44,6 +59,7 @@
   <ul class="item-list">
     {{range $pages}}
     <li>
+      {{if .Pinned}}<span class="pinned-badge" title="置顶">📌</span>{{end}}
       <span class="item-list-title"><a href="{{.Permalink}}">{{.Title}}</a></span>
       <span class="item-list-date">{{.Date.Format "2006-01-02"}}</span>
     </li>

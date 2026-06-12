@@ -17,7 +17,10 @@ func (b *Builder) renderTaxonomies(site *index.Site, public string) error {
 		Site:   site,
 		Page:   &content.Page{Title: "Categories"},
 		Config: b.cfg,
-		Extra:  map[string]interface{}{"title": "Categories"},
+		Extra: map[string]interface{}{
+			"title":         "Categories",
+			"categoryStats": site.CategoryStats(),
+		},
 	}
 	if err := b.renderToFile(catIndexData, filepath.Join(catDir, "index.html"), "taxonomy.html"); err != nil {
 		return fmt.Errorf("categories index: %w", err)
@@ -37,7 +40,11 @@ func (b *Builder) renderTaxonomies(site *index.Site, public string) error {
 		Site:   site,
 		Page:   &content.Page{Title: "Tags"},
 		Config: b.cfg,
-		Extra:  map[string]interface{}{"title": "Tags"},
+		Extra: map[string]interface{}{
+			"title":           "Tags",
+			"tagDescriptions": b.cfg.TagDescriptions,
+			"tagStats":        site.TagStats(),
+		},
 	}
 	if err := b.renderToFile(tagIndexData, filepath.Join(tagDir, "index.html"), "taxonomy.html"); err != nil {
 		return fmt.Errorf("tags index: %w", err)

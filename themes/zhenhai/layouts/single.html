@@ -1,6 +1,9 @@
 {{define "content"}}
 {{template "toc" .}}
 
+{{if .Page.Cover}}
+<div class="article-cover"><img src="{{.Page.Cover}}" alt="{{.Page.Title}}" loading="eager"></div>
+{{end}}
 <article class="article-content">
   <header class="article-header">
     <h1 class="article-title">{{.Page.Title}}</h1>

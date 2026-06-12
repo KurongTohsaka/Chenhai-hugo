@@ -194,6 +194,26 @@ func (s *Site) BuildTagCloud() []TagCloudEntry {
 	return entries
 }
 
+// DailyCount represents a single day with a post count for the heatmap.
+type DailyCount struct {
+	Date  string `json:"date"` // "2006-01-02"
+	Count int    `json:"count"`
+}
+
+// BuildHeatmap returns daily post counts for all days, sorted by date ascending.
+func (s *Site) BuildHeatmap() []DailyCount {
+	dayCount := make(map[string]int)
+	for _, p := range s.PublishedPages() {
+		dayCount[p.Date.Format("2006-01-02")]++
+	}
+	var result []DailyCount
+	for d, c := range dayCount {
+		result = append(result, DailyCount{Date: d, Count: c})
+	}
+	sort.Slice(result, func(i, j int) bool { return result[i].Date < result[j].Date })
+	return result
+}
+
 // PublishedPages returns all published pages (excluding layout-only pages).
 // When showDrafts was true in BuildSite, drafts are included in this result.
 func (s *Site) PublishedPages() []*content.Page {
@@ -264,6 +284,43 @@ func (s *Site) RelatedPosts(page *content.Page, n int) []*content.Page {
 		result[i] = c.p
 	}
 	return result
+}
+
+// TaxonomyStats holds display metadata for a taxonomy term.
+type TaxonomyStats struct {
+	Count      int
+	LastUpdate string // "2006-01"
+}
+
+// TagStats returns stats for all tags.
+func (s *Site) TagStats() map[string]TaxonomyStats {
+	result := make(map[string]TaxonomyStats)
+	for tag, pages := range s.Tags {
+		result[tag] = statsForPages(pages)
+	}
+	return result
+}
+
+// CategoryStats returns stats for all categories.
+func (s *Site) CategoryStats() map[string]TaxonomyStats {
+	result := make(map[string]TaxonomyStats)
+	for cat, pages := range s.Categories {
+		result[cat] = statsForPages(pages)
+	}
+	return result
+}
+
+func statsForPages(pages []*content.Page) TaxonomyStats {
+	if len(pages) == 0 {
+		return TaxonomyStats{}
+	}
+	latest := pages[0].Date
+	for _, p := range pages[1:] {
+		if p.Date.After(latest) {
+			latest = p.Date
+		}
+	}
+	return TaxonomyStats{Count: len(pages), LastUpdate: latest.Format("2006-01")}
 }
 
 // appendArchiveMonth appends a page to the correct month slice.
