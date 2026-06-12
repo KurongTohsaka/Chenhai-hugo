@@ -14,7 +14,8 @@ type Config struct {
 	Markup      Markup          `yaml:"markup"`
 	Social      Social          `yaml:"social"`
 	SEO         SEO             `yaml:"seo"`
-	ImageHost   ImageHostConfig `yaml:"imageHost"`
+	ImageHost       ImageHostConfig     `yaml:"imageHost"`
+	TagDescriptions map[string]string  `yaml:"tagDescriptions"`
 }
 
 type Author struct {
