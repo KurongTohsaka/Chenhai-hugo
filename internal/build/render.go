@@ -3,14 +3,16 @@ package build
 import (
 	"fmt"
 	"path/filepath"
+	"runtime"
 	"strings"
+	"sync"
 
 	"github.com/KurongTohsaka/chenhai-hugo/internal/index"
 	"github.com/KurongTohsaka/chenhai-hugo/internal/theme"
 )
 
-// renderPages renders the paginated homepage and all individual non-draft pages.
-// Pages that are unchanged (skipped) are not re-rendered — their output already exists in public/.
+// renderPages renders the paginated homepage and all individual non-draft pages
+// concurrently using a goroutine pool limited by runtime.NumCPU().
 func (b *Builder) renderPages(site *index.Site, public string) error {
 	// Render paginated homepage (always rendered — it may include changed pages)
 	published := site.PublishedPages()
@@ -18,27 +20,19 @@ func (b *Builder) renderPages(site *index.Site, public string) error {
 		return fmt.Errorf("homepage: %w", err)
 	}
 
-	// Render each non-draft page using single.html template
-	total := 0
-	for _, page := range site.Pages {
-		if page.Draft {
-			continue
-		}
-		if b.skippedPaths[page.FilePath] {
-			continue // skip unchanged pages from count
-		}
-		total++
+	// Collect non-draft, non-skipped pages
+	type renderTask struct {
+		pageData *theme.TemplateData
+		outDir   string
+		tmpl     string
+		title    string
 	}
-	rendered := 0
-	skipped := 0
+	var tasks []renderTask
 	for _, page := range site.Pages {
 		if page.Draft {
 			continue
 		}
-
-		// Skip template rendering for unchanged pages — output already exists in public/
 		if b.skippedPaths[page.FilePath] {
-			skipped++
 			continue
 		}
 
@@ -78,14 +72,47 @@ func (b *Builder) renderPages(site *index.Site, public string) error {
 		if page.Layout != "" {
 			tmpl = page.Layout + ".html"
 		}
-		if err := b.renderToFile(pageData, filepath.Join(outDir, "index.html"), tmpl); err != nil {
-			return fmt.Errorf("page %q: %w", page.Title, err)
-		}
-		rendered++
-		fmt.Printf("\r  渲染 %d/%d 篇文章（跳过 %d）", rendered, total+skipped, skipped)
+		tasks = append(tasks, renderTask{
+			pageData: pageData,
+			outDir:   outDir,
+			tmpl:     tmpl,
+			title:    page.Title,
+		})
 	}
-	if total+skipped > 0 {
-		fmt.Println()
+
+	if len(tasks) == 0 {
+		return nil
+	}
+
+	// Concurrent rendering with semaphore
+	sem := make(chan struct{}, runtime.NumCPU())
+	var wg sync.WaitGroup
+	var mu sync.Mutex
+	var firstErr error
+	rendered := 0
+
+	for _, tsk := range tasks {
+		wg.Add(1)
+		go func(t renderTask) {
+			defer wg.Done()
+			sem <- struct{}{}
+			defer func() { <-sem }()
+
+			err := b.renderToFile(t.pageData, filepath.Join(t.outDir, "index.html"), t.tmpl)
+			mu.Lock()
+			if err != nil && firstErr == nil {
+				firstErr = fmt.Errorf("page %q: %w", t.title, err)
+			}
+			rendered++
+			fmt.Printf("\r  渲染 %d/%d 篇文章", rendered, len(tasks))
+			mu.Unlock()
+		}(tsk)
+	}
+	wg.Wait()
+
+	fmt.Println()
+	if firstErr != nil {
+		return firstErr
 	}
 	return nil
 }
