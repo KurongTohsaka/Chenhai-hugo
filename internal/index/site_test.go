@@ -495,3 +495,54 @@ func TestPagesByTag(t *testing.T) {
 		t.Errorf("expected 0 pages for nonexistent tag, got %d", len(tagNone))
 	}
 }
+
+func TestBuildSite_PinnedSortOrder(t *testing.T) {
+	cfg := config.DefaultConfig()
+	pages := []*content.Page{
+		{Title: "old-unpinned", Date: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC), Pinned: false, RawContent: "x", RelPath: "posts/a.md", Section: "posts"},
+		{Title: "new-unpinned", Date: time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC), Pinned: false, RawContent: "x", RelPath: "posts/b.md", Section: "posts"},
+		{Title: "old-pinned", Date: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC), Pinned: true, RawContent: "x", RelPath: "posts/c.md", Section: "posts"},
+		{Title: "new-pinned", Date: time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC), Pinned: true, RawContent: "x", RelPath: "posts/d.md", Section: "posts"},
+	}
+
+	site := index.BuildSite(cfg, pages, false)
+
+	if len(site.Pages) != 4 {
+		t.Fatalf("expected 4 pages, got %d", len(site.Pages))
+	}
+
+	// Pinned pages should come first, sorted by date descending
+	if site.Pages[0].Title != "new-pinned" {
+		t.Errorf("page 0: expected 'new-pinned', got %q", site.Pages[0].Title)
+	}
+	if site.Pages[1].Title != "old-pinned" {
+		t.Errorf("page 1: expected 'old-pinned', got %q", site.Pages[1].Title)
+	}
+	if site.Pages[2].Title != "new-unpinned" {
+		t.Errorf("page 2: expected 'new-unpinned', got %q", site.Pages[2].Title)
+	}
+	if site.Pages[3].Title != "old-unpinned" {
+		t.Errorf("page 3: expected 'old-unpinned', got %q", site.Pages[3].Title)
+	}
+}
+
+func TestBuildSite_PinnedNoPinned(t *testing.T) {
+	cfg := config.DefaultConfig()
+	pages := []*content.Page{
+		{Title: "newest", Date: time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC), Pinned: false, RawContent: "x", RelPath: "posts/a.md", Section: "posts"},
+		{Title: "oldest", Date: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC), Pinned: false, RawContent: "x", RelPath: "posts/b.md", Section: "posts"},
+	}
+
+	site := index.BuildSite(cfg, pages, false)
+
+	if len(site.Pages) != 2 {
+		t.Fatalf("expected 2 pages, got %d", len(site.Pages))
+	}
+	// No pinned pages, should sort by date descending as before
+	if site.Pages[0].Title != "newest" {
+		t.Errorf("page 0: expected 'newest', got %q", site.Pages[0].Title)
+	}
+	if site.Pages[1].Title != "oldest" {
+		t.Errorf("page 1: expected 'oldest', got %q", site.Pages[1].Title)
+	}
+}
