@@ -56,6 +56,8 @@ type fmRaw struct {
 	Layout                                                 string
 	Series                                                 string
 	AIGenerated                                            bool `yaml:"ai_generated"`
+	Cover                                                  string
+	Pinned                                                 bool
 }
 
 func parseFM(data string, page *Page) error {
@@ -71,6 +73,7 @@ func parseFM(data string, page *Page) error {
 		"weight": true, "description": true, "summary": true,
 		"toc": true, "math": true, "layout": true, "series": true,
 		"ai_generated": true,
+		"cover": true, "pinned": true,
 	}
 	var rawMap map[string]interface{}
 	if err := yaml.Unmarshal([]byte(data), &rawMap); err == nil {
@@ -95,6 +98,8 @@ func parseFM(data string, page *Page) error {
 	page.Layout = raw.Layout
 	page.Series = raw.Series
 	page.AIGenerated = raw.AIGenerated
+	page.Cover = raw.Cover
+	page.Pinned = raw.Pinned
 	if raw.Date != "" {
 		t, err := parseDate(raw.Date)
 		if err != nil {

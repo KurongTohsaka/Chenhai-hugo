@@ -152,3 +152,48 @@ Body.
 		t.Errorf("error should contain 'unclosed front matter', got: %v", err)
 	}
 }
+
+func TestParseFrontMatter_CoverAndPinned(t *testing.T) {
+	raw := `---
+title: Featured Post
+date: 2024-06-01
+cover: https://example.com/cover.jpg
+pinned: true
+---
+Body content.
+`
+	page, body, err := content.ParseFrontMatter([]byte(raw))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if page.Cover != "https://example.com/cover.jpg" {
+		t.Errorf("Cover = %q, want %q", page.Cover, "https://example.com/cover.jpg")
+	}
+	if !page.Pinned {
+		t.Error("Pinned should be true")
+	}
+	if string(body) != "Body content." {
+		t.Errorf("body = %q, want %q", string(body), "Body content.")
+	}
+}
+
+func TestParseFrontMatter_CoverAndPinned_Default(t *testing.T) {
+	raw := `---
+title: Normal Post
+date: 2024-06-01
+---
+Body.
+`
+	page, _, err := content.ParseFrontMatter([]byte(raw))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if page.Cover != "" {
+		t.Errorf("Cover should be empty by default, got %q", page.Cover)
+	}
+	if page.Pinned {
+		t.Error("Pinned should be false by default")
+	}
+}

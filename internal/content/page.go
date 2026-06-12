@@ -30,6 +30,8 @@ type Page struct {
 	Section  string
 	Series     string
 	AIGenerated bool
+	Cover       string
+	Pinned      bool
 }
 
 func (p *Page) Permalink() string {
