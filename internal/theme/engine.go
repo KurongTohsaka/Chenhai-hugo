@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/KurongTohsaka/chenhai-hugo/internal/config"
 	"github.com/KurongTohsaka/chenhai-hugo/internal/content"
@@ -38,6 +39,18 @@ type Engine struct {
 	templates          *template.Template
 	siteRoot           string
 	extThemeLayoutsDir string // path to external theme layouts/, empty if n/a
+	templateSrcs       map[string][]byte // template source cache, keyed by name
+	srcMu              sync.RWMutex
+}
+
+// SetTemplateSrcs sets the template source cache for reuse across renders.
+func (e *Engine) SetTemplateSrcs(srcs map[string][]byte) {
+	e.templateSrcs = srcs
+}
+
+// TemplateSrcs returns the template source cache.
+func (e *Engine) TemplateSrcs() map[string][]byte {
+	return e.templateSrcs
 }
 
 // New creates a new template Engine. Loads embedded Zhenhai theme first,
@@ -166,28 +179,68 @@ func (e *Engine) RenderPage(w io.Writer, name string, data *TemplateData) error 
 	return clone.ExecuteTemplate(w, "base.html", data)
 }
 
-// readLayoutSource reads the source of a layout template, checking site-specific
-// layouts first, then the external theme layouts, then falling back to the
-// embedded Zhenhai theme.
+// readLayoutSource reads the source of a layout template, checking the in-memory
+// cache first, then site-specific layouts, then the external theme layouts, then
+// falling back to the embedded Zhenhai theme.
 func (e *Engine) readLayoutSource(name string) ([]byte, error) {
+	// Check in-memory cache first (read lock)
+	e.srcMu.RLock()
+	if e.templateSrcs != nil {
+		if src, ok := e.templateSrcs[name]; ok {
+			e.srcMu.RUnlock()
+			return src, nil
+		}
+	}
+	e.srcMu.RUnlock()
+
+	var src []byte
+	var err error
+
 	// Check site-specific layouts directory
 	if e.siteRoot != "" {
 		siteLayoutPath := filepath.Join(e.siteRoot, "layouts", name)
-		if info, err := os.Stat(siteLayoutPath); err == nil && !info.IsDir() {
-			return os.ReadFile(siteLayoutPath)
+		if info, statErr := os.Stat(siteLayoutPath); statErr == nil && !info.IsDir() {
+			src, err = os.ReadFile(siteLayoutPath)
+			if err == nil {
+				e.srcMu.Lock()
+				if e.templateSrcs == nil {
+					e.templateSrcs = make(map[string][]byte)
+				}
+				e.templateSrcs[name] = src
+				e.srcMu.Unlock()
+				return src, nil
+			}
 		}
 	}
 
 	// Check external theme layouts directory
 	if e.extThemeLayoutsDir != "" {
 		extPath := filepath.Join(e.extThemeLayoutsDir, name)
-		if info, err := os.Stat(extPath); err == nil && !info.IsDir() {
-			return os.ReadFile(extPath)
+		if info, statErr := os.Stat(extPath); statErr == nil && !info.IsDir() {
+			src, err = os.ReadFile(extPath)
+			if err == nil {
+				e.srcMu.Lock()
+				if e.templateSrcs == nil {
+					e.templateSrcs = make(map[string][]byte)
+				}
+				e.templateSrcs[name] = src
+				e.srcMu.Unlock()
+				return src, nil
+			}
 		}
 	}
 
 	// Fall back to embedded theme
-	return zhenhai.FS.ReadFile("layouts/" + name)
+	src, err = zhenhai.FS.ReadFile("layouts/" + name)
+	if err == nil {
+		e.srcMu.Lock()
+		if e.templateSrcs == nil {
+			e.templateSrcs = make(map[string][]byte)
+		}
+		e.templateSrcs[name] = src
+		e.srcMu.Unlock()
+	}
+	return src, err
 }
 
 // mergeThemeParams loads theme.yaml from the active theme and merges

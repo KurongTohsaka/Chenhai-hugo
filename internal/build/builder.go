@@ -7,11 +7,19 @@ import (
 	"strings"
 	"time"
 
+	"sync"
+
 	"github.com/KurongTohsaka/chenhai-hugo/internal/config"
 	"github.com/KurongTohsaka/chenhai-hugo/internal/content"
 	"github.com/KurongTohsaka/chenhai-hugo/internal/imagehost"
 	"github.com/KurongTohsaka/chenhai-hugo/internal/index"
 	"github.com/KurongTohsaka/chenhai-hugo/internal/theme"
+)
+
+// cachedEngine persists across Builder instances for incremental build engine reuse.
+var (
+	cachedEngine   *theme.Engine
+	cachedEngineMu sync.Mutex
 )
 
 // Builder orchestrates the full site build pipeline.
@@ -72,6 +80,17 @@ func (b *Builder) Build() error {
 	}
 
 	// 1. Collect all pages from content/
+	// P2: reuse cached engine when templates haven't changed
+	cachedEngineMu.Lock()
+	if !fullRebuild && cachedEngine != nil {
+		b.engine = cachedEngine
+		cachedEngineMu.Unlock()
+		fmt.Println("  (复用模板缓存)")
+	} else {
+		cachedEngine = b.engine
+		cachedEngineMu.Unlock()
+	}
+
 	b.skippedPaths = make(map[string]bool)
 	t = time.Now()
 	fmt.Print("  扫描 content/ ... ")

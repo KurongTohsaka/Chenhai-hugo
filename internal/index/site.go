@@ -50,11 +50,15 @@ type TagCloudEntry struct {
 }
 
 // BuildSite processes all pages and builds the complete Site index.
-// Pages are sorted by date descending. When showDrafts is false, draft pages
+// Pages are sorted with pinned pages first (by date descending), then
+// unpinned pages by date descending. When showDrafts is false, draft pages
 // are excluded from the Site entirely (Pages, Categories, Tags, Archives).
 func BuildSite(cfg *config.Config, pages []*content.Page, showDrafts bool) *Site {
-	// Sort by date descending
+	// Sort by pinned first, then by date descending
 	sort.Slice(pages, func(i, j int) bool {
+		if pages[i].Pinned != pages[j].Pinned {
+			return pages[i].Pinned
+		}
 		return pages[i].Date.After(pages[j].Date)
 	})
 
