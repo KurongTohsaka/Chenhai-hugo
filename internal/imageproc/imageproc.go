@@ -143,3 +143,27 @@ func WriteFile(path string, data []byte) error {
 	}
 	return os.WriteFile(path, data, 0644)
 }
+
+// WriteImage encodes img to path in the format implied by ext (.jpg/.png/.webp).
+func WriteImage(path string, img image.Image, ext string) error {
+	var buf bytes.Buffer
+	switch strings.ToLower(ext) {
+	case ".jpg", ".jpeg":
+		if err := jpeg.Encode(&buf, img, &jpeg.Options{Quality: 90}); err != nil {
+			return err
+		}
+	case ".png":
+		if err := png.Encode(&buf, img); err != nil {
+			return err
+		}
+	case ".webp":
+		data, err := EncodeWebP(img, 80)
+		if err != nil {
+			return err
+		}
+		buf.Write(data)
+	default:
+		return fmt.Errorf("unsupported output format: %s", ext)
+	}
+	return WriteFile(path, buf.Bytes())
+}
