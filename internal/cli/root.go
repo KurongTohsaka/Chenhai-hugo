@@ -20,6 +20,7 @@ func init() {
 	rootCmd.AddCommand(initCmd)
 	rootCmd.AddCommand(deployCmd)
 	rootCmd.AddCommand(doctorCmd)
+	rootCmd.AddCommand(newImageCmd())
 	newCmd.AddCommand(themeCmd)
 }
 
