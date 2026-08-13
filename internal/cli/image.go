@@ -226,6 +226,13 @@ func runImageAdd(src, post, dir, name string, quality int, force bool) error {
 	}
 	outPath := filepath.Join(staticDir, outName)
 
+	// 3.5 Overwrite guard: refuse to clobber an existing file unless --force
+	if _, err := os.Stat(outPath); err == nil && !force {
+		return fmt.Errorf("输出文件已存在（--force 覆盖）: %s", outPath)
+	} else if err != nil && !os.IsNotExist(err) {
+		return fmt.Errorf("检查输出文件: %w", err)
+	}
+
 	// 4. Process: gif copy / transcode
 	if ext == ".gif" {
 		data, err := os.ReadFile(src)
