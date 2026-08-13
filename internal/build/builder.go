@@ -193,7 +193,23 @@ func (b *Builder) Build() error {
 		fmt.Printf("完成 (%s)\n", time.Since(t).Round(time.Millisecond))
 	}
 
-	// 11. Update config hash in cache
+	// 11. RSS/Atom feed
+	t = time.Now()
+	fmt.Print("  生成 RSS 订阅 ... ")
+	feed, err := generateRSS(b.cfg, site.Pages)
+	if err != nil {
+		return fmt.Errorf("generate rss: %w", err)
+	}
+	if len(feed) > 0 {
+		if err := os.WriteFile(filepath.Join(public, "atom.xml"), feed, 0644); err != nil {
+			return fmt.Errorf("write atom.xml: %w", err)
+		}
+		fmt.Printf("完成 (%s)\n", time.Since(t).Round(time.Millisecond))
+	} else if b.cfg.RSS.Enabled && b.cfg.BaseURL == "" {
+		fmt.Println("  ⚠ 未配置 baseURL，跳过 RSS 生成（config.yaml 添加 baseURL 即可）")
+	}
+
+	// 12. Update config hash in cache
 	if _, err := os.Stat(configPath); err == nil {
 		b.cache.updateConfig(configPath)
 	}

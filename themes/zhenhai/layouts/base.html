@@ -51,6 +51,10 @@ gtag('js', new Date());
 gtag('config', '{{.Config.SEO.GoogleAnalytics}}');
 </script>
 {{end}}
+
+{{if and .Config.BaseURL .Config.RSS.Enabled}}
+<link rel="alternate" type="application/atom+xml" title="{{.Config.Title}} - 订阅" href="{{.Config.BaseURL}}/atom.xml">
+{{end}}
 </head>
 <body>
 
