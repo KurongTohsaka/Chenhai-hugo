@@ -167,10 +167,10 @@ func newImageAddCmd() *cobra.Command {
 //	about/index.md                   → img/about
 func postToImgDir(post string) string {
 	rel := strings.TrimSuffix(post, ".md")
+	rel = strings.TrimSuffix(rel, "/index")
 	if idx := strings.Index(rel, "/"); idx >= 0 {
 		rel = rel[idx+1:]
 	}
-	rel = strings.TrimSuffix(rel, "/index")
 	return filepath.Join("img", rel)
 }
 
