@@ -3,17 +3,19 @@ module github.com/KurongTohsaka/chenhai-hugo
 go 1.23.3
 
 require (
+	github.com/alecthomas/chroma/v2 v2.2.0
+	github.com/chai2010/webp v1.4.0
 	github.com/fsnotify/fsnotify v1.10.1
 	github.com/gorilla/websocket v1.5.3
 	github.com/litao91/goldmark-mathjax v0.0.0-20210217064022-a43cf739a50f
 	github.com/spf13/cobra v1.10.2
 	github.com/yuin/goldmark v1.8.2
 	github.com/yuin/goldmark-highlighting/v2 v2.0.0-20230729083705-37449abec8cc
+	golang.org/x/image v0.23.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
-	github.com/alecthomas/chroma/v2 v2.2.0 // indirect
 	github.com/dlclark/regexp2 v1.7.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.9 // indirect
