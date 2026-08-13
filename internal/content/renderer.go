@@ -87,6 +87,9 @@ func (r *Renderer) RenderHTML(source []byte) (string, error) {
 	return r.reg.ReplacePlaceholders(result), nil
 }
 
+// Registry exposes the shortcode registry for provider injection.
+func (r *Renderer) Registry() *ShortcodeRegistry { return r.reg }
+
 type TOCItem struct {
 	ID    string
 	Title string

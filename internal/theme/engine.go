@@ -243,6 +243,18 @@ func (e *Engine) readLayoutSource(name string) ([]byte, error) {
 	return src, err
 }
 
+// LookupShortcodeTemplate returns a theme-provided shortcode template
+// (layouts/shortcodes/<name>.html), reusing readLayoutSource's three-layer
+// lookup (site → external theme → embedded Zhenhai) plus its templateSrcs
+// cache and srcMu lock. Zero new traversal code.
+func (e *Engine) LookupShortcodeTemplate(name string) ([]byte, bool) {
+	src, err := e.readLayoutSource("shortcodes/" + name + ".html")
+	if err != nil {
+		return nil, false
+	}
+	return src, true
+}
+
 // mergeThemeParams loads theme.yaml from the active theme and merges
 // any default params into cfg.ThemeConfig.Params.
 // User-defined values in config.yaml take precedence and are not overwritten.

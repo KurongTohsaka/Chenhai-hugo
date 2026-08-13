@@ -36,6 +36,10 @@ type Builder struct {
 
 // New creates a new Builder.
 func New(cfg *config.Config, root string, r *content.Renderer, e *theme.Engine, showDrafts bool) *Builder {
+	// Wire the theme engine as the shortcode template provider (layout
+	// overrides via layouts/shortcodes/<name>.html). One injection point
+	// covers both build and serve (server rebuilds go through build.New).
+	r.Registry().SetTemplateProvider(e)
 	return &Builder{
 		cfg:        cfg,
 		root:       root,
