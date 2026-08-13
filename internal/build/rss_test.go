@@ -105,13 +105,61 @@ func TestGenerateRSS_Limit(t *testing.T) {
 	pages := []*content.Page{}
 	for i := 1; i <= 5; i++ {
 		pages = append(pages, &content.Page{
-			Title: "p" + string(rune('0'+i)),
-			Date:  time.Date(2026, 8, i, 0, 0, 0, 0, time.UTC),
+			Title:   "p" + string(rune('0'+i)),
+			Date:    time.Date(2026, 8, i, 0, 0, 0, 0, time.UTC),
 			RelPath: "posts/p.md", Section: "posts",
 		})
 	}
 	xml, _ := generateRSS(cfg, pages)
 	if n := strings.Count(string(xml), "<entry>"); n != 2 {
 		t.Errorf("entry count = %d, want 2", n)
+	}
+}
+
+// Y12: rss.limit 边界校验——负值必须报错而非裸 panic（修复前 slice bounds
+// out of range [-1]），零值必须报错而非静默空 feed，正常值照常通过。
+func TestGenerateRSS_LimitNegative(t *testing.T) {
+	cfg := config.DefaultConfig()
+	cfg.BaseURL = "https://example.com"
+	cfg.RSS.Limit = -1
+	pages := []*content.Page{{Title: "x", Date: time.Now(), RelPath: "posts/x.md", Section: "posts"}}
+	_, err := generateRSS(cfg, pages)
+	if err == nil {
+		t.Fatal("expected error for rss.limit = -1")
+	}
+	if !strings.Contains(err.Error(), "rss.limit") {
+		t.Errorf("error should mention rss.limit, got: %v", err)
+	}
+}
+
+func TestGenerateRSS_LimitZero(t *testing.T) {
+	cfg := config.DefaultConfig()
+	cfg.BaseURL = "https://example.com"
+	cfg.RSS.Limit = 0
+	pages := []*content.Page{{Title: "x", Date: time.Now(), RelPath: "posts/x.md", Section: "posts"}}
+	_, err := generateRSS(cfg, pages)
+	if err == nil {
+		t.Fatal("expected error for rss.limit = 0")
+	}
+}
+
+func TestGenerateRSS_LimitValid(t *testing.T) {
+	cfg := config.DefaultConfig()
+	cfg.BaseURL = "https://example.com"
+	cfg.RSS.Limit = 20
+	pages := []*content.Page{}
+	for i := 1; i <= 5; i++ {
+		pages = append(pages, &content.Page{
+			Title:   "p" + string(rune('0'+i)),
+			Date:    time.Date(2026, 8, i, 0, 0, 0, 0, time.UTC),
+			RelPath: "posts/p.md", Section: "posts",
+		})
+	}
+	xml, err := generateRSS(cfg, pages)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if n := strings.Count(string(xml), "<entry>"); n != 5 {
+		t.Errorf("entry count = %d, want 5", n)
 	}
 }

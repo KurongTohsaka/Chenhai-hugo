@@ -120,3 +120,35 @@ Body content.
 		t.Errorf("unexpected error: %v", err)
 	}
 }
+
+// Y12: doctor 检测非法 rss.limit（error 级——构建将失败）。
+func TestDoctor_InvalidRSSLimit(t *testing.T) {
+	root := t.TempDir()
+
+	cfgYAML := []byte(`title: "Test Site"
+baseURL: "https://example.com"
+rss:
+  enabled: true
+  limit: 0
+`)
+	os.WriteFile(filepath.Join(root, "config.yaml"), cfgYAML, 0644)
+
+	contentDir := filepath.Join(root, "content", "posts")
+	os.MkdirAll(contentDir, 0755)
+	postMD := []byte(`---
+title: "Test Post"
+date: "2024-01-15"
+---
+Body content.
+`)
+	os.WriteFile(filepath.Join(contentDir, "test.md"), postMD, 0644)
+
+	origDir, _ := os.Getwd()
+	os.Chdir(root)
+	defer os.Chdir(origDir)
+
+	err := cli.ExecuteDoctor(root)
+	if err == nil {
+		t.Error("expected error for invalid rss.limit")
+	}
+}

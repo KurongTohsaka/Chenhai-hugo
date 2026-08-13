@@ -16,7 +16,7 @@ var doctorCmd = &cobra.Command{
 	Use:   "doctor",
 	Short: "站点健康检查",
 	Long:  "检测 config.yaml 语法、content/ 结构完整性、模板文件、缓存一致性等。",
-	RunE: runDoctor,
+	RunE:  runDoctor,
 }
 
 func runDoctor(cmd *cobra.Command, args []string) error {
@@ -52,6 +52,12 @@ func ExecuteDoctor(root string) error {
 			if cfg.BaseURL == "" {
 				fmt.Println("⚠ config.yaml 未配置 baseURL，RSS 订阅将不会生成")
 				warnings++
+			}
+			// rss.limit 检查：非法值（<1）时构建必然失败（generateRSS 返回 error），
+			// 视为错误级（Y12）。
+			if cfg.RSS.Enabled && cfg.RSS.Limit < 1 {
+				fmt.Printf("✗ rss.limit 必须 ≥ 1（当前 %d），RSS 构建将失败\n", cfg.RSS.Limit)
+				errors++
 			}
 		}
 	}

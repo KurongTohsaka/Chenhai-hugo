@@ -52,6 +52,11 @@ func generateRSS(cfg *config.Config, pages []*content.Page) ([]byte, error) {
 	if !cfg.RSS.Enabled || cfg.BaseURL == "" {
 		return nil, nil
 	}
+	// Y12: limit 边界校验——非法值（<1）直接报错，避免负值裸 panic
+	// （slice bounds out of range）与零值静默空 feed。
+	if cfg.RSS.Limit < 1 {
+		return nil, fmt.Errorf("rss.limit 必须 ≥ 1（当前 %d）", cfg.RSS.Limit)
+	}
 	base := strings.TrimRight(cfg.BaseURL, "/")
 
 	var published []*content.Page
@@ -110,10 +115,13 @@ func generateRSS(cfg *config.Config, pages []*content.Page) ([]byte, error) {
 	return append([]byte(xml.Header), out...), nil
 }
 
+// htmlTagRegex matches HTML tags for summary extraction (compiled once,
+// not per page per build).
+var htmlTagRegex = regexp.MustCompile(`<[^>]+>`)
+
 // summarizeContent strips HTML tags and truncates plain text to n runes.
 func summarizeContent(content string, n int) string {
-	re := regexp.MustCompile(`<[^>]+>`)
-	text := strings.TrimSpace(re.ReplaceAllString(content, ""))
+	text := strings.TrimSpace(htmlTagRegex.ReplaceAllString(content, ""))
 	text = html.UnescapeString(text)
 	runes := []rune(text)
 	if len(runes) > n {
