@@ -3,7 +3,7 @@ title: "Shortcode 组件演示"
 date: 2026-08-13
 categories: ["测试"]
 tags: ["shortcode"]
-draft: false
+draft: true
 description: "details / gallery / tabs 组件集成验证页"
 ---
 
