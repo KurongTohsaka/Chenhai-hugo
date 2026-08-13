@@ -12,9 +12,11 @@ func TestRenderShortcode_Unknown(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	// Unknown shortcodes pass through verbatim (HTML-commented) for visibility.
-	if !strings.Contains(html, "nosuch") {
-		t.Errorf("unknown shortcode swallowed: %s", html)
+	// Unknown shortcodes pass through verbatim, marked with an HTML comment
+	// so the author can spot it (a bare "nosuch" check cannot distinguish
+	// recognized+passthrough from unrecognized).
+	if !strings.Contains(html, "<!-- unknown shortcode: nosuch -->") {
+		t.Errorf("unknown shortcode missing comment marker: %s", html)
 	}
 }
 
@@ -107,6 +109,71 @@ func TestRenderShortcode_Details(t *testing.T) {
 	}
 	if !strings.Contains(html, "<strong>内容</strong>") {
 		t.Errorf("inner markdown not rendered: %s", html)
+	}
+	// Regression (verify 🔴): the input is the single-line inline form with
+	// following content — "结尾" must stay OUTSIDE the details block. Before
+	// the Closed fix it was swallowed into Content and rendered inside.
+	if d := strings.Index(html, "</details>"); d < 0 {
+		t.Errorf("missing details close tag: %s", html)
+	} else if j := strings.Index(html, "结尾"); j < 0 || j < d {
+		t.Errorf("content after inline shortcode swallowed into details: %s", html)
+	}
+}
+
+// Regression (verify 🔴): single-line inline form {{< name >}}rest{{< /name >}}
+// closes the block on the opening line; following document content must not
+// be swallowed into Content.
+func TestRenderShortcode_InlineFollowedByContent(t *testing.T) {
+	r := NewRenderer("github", false)
+	src := "{{< details \"答案\" >}}折叠**内容**{{< /details >}}\n\n结尾\n"
+	html, err := r.RenderHTML([]byte(src))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(html, `<details class="shortcode-details">`) {
+		t.Errorf("inline details not rendered: %s", html)
+	}
+	if !strings.Contains(html, "<strong>内容</strong>") {
+		t.Errorf("inline inner markdown not rendered: %s", html)
+	}
+	// The details body must contain ONLY the inline content; "结尾" must be
+	// outside the block (after </details>).
+	d := strings.Index(html, "</details>")
+	j := strings.Index(html, "结尾")
+	if d < 0 {
+		t.Errorf("missing details close tag: %s", html)
+	} else if j < 0 || j < d {
+		t.Errorf("following content swallowed into inline shortcode: %s", html)
+	}
+}
+
+// Regression (verify 🟡): v0.8 has no nested shortcodes — an unclosed block
+// meeting a new {{< open >}} line terminates there (with the unclosed marker,
+// not silently); the new open starts its own block and must not absorb the
+// earlier block's content.
+func TestRenderShortcode_UnclosedBeforeNewOpen(t *testing.T) {
+	r := NewRenderer("github", false)
+	src := "{{< details \"甲\" >}}\n内容甲\n{{< details \"乙\" >}}\n内容乙\n{{< /details >}}\n"
+	html, err := r.RenderHTML([]byte(src))
+	if err != nil {
+		t.Fatal(err)
+	}
+	// First block is unclosed → HTML comment marker + verbatim passthrough.
+	if !strings.Contains(html, "<!-- unclosed shortcode: details -->") {
+		t.Errorf("missing unclosed marker: %s", html)
+	}
+	// Second block renders normally with its own title.
+	if !strings.Contains(html, "<summary>乙</summary>") {
+		t.Errorf("second details not rendered: %s", html)
+	}
+	// 内容甲 must not leak into the second details body.
+	bodyStart := strings.Index(html, "<summary>乙</summary>")
+	bodyEnd := strings.Index(html, "</details>")
+	if bodyStart < 0 || bodyEnd < 0 {
+		t.Fatalf("missing second details markers: %s", html)
+	}
+	if body := html[bodyStart:bodyEnd]; strings.Contains(body, "内容甲") {
+		t.Errorf("first block content leaked into second details: %s", html)
 	}
 }
 

@@ -81,7 +81,19 @@ func (p *shortcodeBlockParser) Open(parent ast.Node, reader text.Reader, pc pars
 
 func (p *shortcodeBlockParser) Continue(node ast.Node, reader text.Reader, pc parser.Context) parser.State {
 	sc := node.(*ShortcodeNode)
+	// Inline form: the closing marker was consumed on the opening line, so
+	// the block is already closed — terminate here. Without this, every
+	// line to EOF gets swallowed into Content (verify 🔴).
+	if sc.Closed {
+		return parser.Close
+	}
 	line, seg := reader.PeekLine()
+	// v0.8 has no nested shortcodes: a new {{< name >}} open line before a
+	// matching close means this block is unclosed — terminate it WITHOUT
+	// consuming the line, so the new open starts its own block (verify 🟡).
+	if shortcodeOpenRe.Match(line) {
+		return parser.Close
+	}
 	m := shortcodeCloseRe.FindSubmatch(line)
 	if m != nil && string(m[1]) == sc.Name {
 		sc.Closed = true
@@ -102,7 +114,10 @@ func (p *shortcodeBlockParser) Close(node ast.Node, reader text.Reader, pc parse
 		buf.Write(reader.Value(lines.At(i)))
 		buf.WriteByte('\n')
 	}
-	sc.Content = buf.String()
+	// Trim the leading/trailing blank lines goldmark's line advancement
+	// leaves around multi-line content (verify ⚪6); known components already
+	// tolerate them, pass-through output becomes cleaner.
+	sc.Content = strings.TrimSpace(buf.String())
 	sc.Lines().Clear()
 }
 
@@ -188,7 +203,13 @@ func stripShortcodeBlocks(src []byte) []byte {
 		case inCode:
 			// inside fenced code: untouched (shortcodes inside fences are literal)
 		case shortcodeOpenRe.MatchString(trimmed):
-			inSC = true
+			// Single-line inline form ({{< name >}}rest{{< /name >}} on one
+			// line) closes itself: blank the line but do NOT enter inSC,
+			// otherwise every following line gets blanked and top-level
+			// lang/hl extraction is lost (verify 🔴, same root cause).
+			if !shortcodeCloseInlineRe.MatchString(trimmed) {
+				inSC = true
+			}
 			lines[i] = nil
 		}
 	}
