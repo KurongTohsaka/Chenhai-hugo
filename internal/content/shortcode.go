@@ -173,19 +173,22 @@ func stripShortcodeBlocks(src []byte) []byte {
 	for i, line := range lines {
 		trimmed := strings.TrimSpace(string(line))
 		switch {
+		case inSC:
+			// shortcode-internal lines are blanked; a matching close ends the block.
+			// NOTE: checked FIRST — a ``` line inside a shortcode must not be
+			// mistaken for a top-level fence (probe-verified).
+			if shortcodeCloseRe.MatchString(trimmed) {
+				inSC = false
+			}
+			lines[i] = nil
 		case !inCode && strings.HasPrefix(trimmed, "```"):
 			inCode = true
 		case inCode && strings.HasPrefix(trimmed, "```"):
 			inCode = false
 		case inCode:
-			// inside fenced code: untouched
-		case !inSC && shortcodeOpenRe.MatchString(trimmed):
+			// inside fenced code: untouched (shortcodes inside fences are literal)
+		case shortcodeOpenRe.MatchString(trimmed):
 			inSC = true
-			lines[i] = nil
-		case inSC && shortcodeCloseRe.MatchString(trimmed):
-			inSC = false
-			lines[i] = nil
-		case inSC:
 			lines[i] = nil
 		}
 	}
