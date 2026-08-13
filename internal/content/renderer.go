@@ -15,7 +15,8 @@ import (
 )
 
 type Renderer struct {
-	md goldmark.Markdown
+	md  goldmark.Markdown
+	reg *ShortcodeRegistry
 }
 
 func NewRenderer(style string, lineNumbers bool) *Renderer {
@@ -26,22 +27,36 @@ func NewRenderer(style string, lineNumbers bool) *Renderer {
 	if lineNumbers {
 		formatOptions = append(formatOptions, chromahtml.WithLineNumbers(true))
 	}
-	md := goldmark.New(
-		goldmark.WithExtensions(
-			extension.GFM,        // tables, strikethrough, task lists, autolinks
-			extension.Footnote,   // footnotes
-			extension.Typographer, // smart quotes, dashes, ellipses
-			highlighting.NewHighlighting(
-				highlighting.WithStyle(style),
-				highlighting.WithFormatOptions(formatOptions...),
-			),
-			mathjax.NewMathJax(
-				mathjax.WithInlineDelim("$", "$"),
-				mathjax.WithBlockDelim("$$", "$$"),
-			),
-			Admonition,
-			ImageEnhancer,
+	exts := []goldmark.Extender{
+		extension.GFM,         // tables, strikethrough, task lists, autolinks
+		extension.Footnote,    // footnotes
+		extension.Typographer, // smart quotes, dashes, ellipses
+		highlighting.NewHighlighting(
+			highlighting.WithStyle(style),
+			highlighting.WithFormatOptions(formatOptions...),
 		),
+		mathjax.NewMathJax(
+			mathjax.WithInlineDelim("$", "$"),
+			mathjax.WithBlockDelim("$$", "$$"),
+		),
+		Admonition,
+		ImageEnhancer,
+	}
+	// Build inner markdown (full extensions minus shortcode) for shortcode content.
+	innerMD := goldmark.New(
+		goldmark.WithExtensions(exts...),
+		goldmark.WithParserOptions(parser.WithAutoHeadingID()),
+		goldmark.WithRendererOptions(html.WithUnsafe()),
+	)
+
+	reg := NewShortcodeRegistry(innerMD)
+	// goldmark v1.8.2 的 Markdown 接口无 AddOptions——shortcode 扩展随主实例
+	// 构造时一并注册。
+	mdExts := make([]goldmark.Extender, 0, len(exts)+1)
+	mdExts = append(mdExts, exts...)
+	mdExts = append(mdExts, &shortcodeExt{reg: reg})
+	md := goldmark.New(
+		goldmark.WithExtensions(mdExts...),
 		goldmark.WithParserOptions(
 			parser.WithAutoHeadingID(),
 		),
@@ -49,19 +64,26 @@ func NewRenderer(style string, lineNumbers bool) *Renderer {
 			html.WithUnsafe(), // allow raw HTML in markdown
 		),
 	)
-	return &Renderer{md: md}
+	return &Renderer{md: md, reg: reg}
 }
 
 func (r *Renderer) RenderHTML(source []byte) (string, error) {
-	langs := extractLangs(source)
-	cleaned, hlInfo := extractHLLines(source)
+	// Y1: shortcode 块从提取源中剔除（保留行数），其内部代码块不参与
+	// 顶层 lang/hl 后处理；Convert 仍用完整源（goldmark 负责 shortcode 解析）。
+	stripped := stripShortcodeBlocks(source)
+	langs := extractLangs(stripped)
+	_, hlInfo := extractHLLines(stripped) // 只提取正文标记
+	cleaned, _ := extractHLLines(source)  // 仅删除 {hl_lines} 标记供 Convert
+
+	r.reg.BeginRender()
 	var buf bytes.Buffer
 	if err := r.md.Convert(cleaned, &buf); err != nil {
 		return "", fmt.Errorf("render markdown: %w", err)
 	}
 	result := injectHLLines(buf.String(), hlInfo)
 	result = injectLangLabels(result, langs)
-	return splitLineNumbers(result), nil
+	result = splitLineNumbers(result)
+	return r.reg.ReplacePlaceholders(result), nil
 }
 
 type TOCItem struct {
@@ -71,15 +93,22 @@ type TOCItem struct {
 }
 
 func (r *Renderer) RenderHTMLWithTOC(source []byte) (string, []TOCItem, error) {
-	langs := extractLangs(source)
-	cleaned, hlInfo := extractHLLines(source)
+	// Y1: 与 RenderHTML 同款占位符管线（见 RenderHTML 注释）。
+	stripped := stripShortcodeBlocks(source)
+	langs := extractLangs(stripped)
+	_, hlInfo := extractHLLines(stripped) // 只提取正文标记
+	cleaned, _ := extractHLLines(source)  // 仅删除 {hl_lines} 标记供 Convert
+
+	r.reg.BeginRender()
 	var buf bytes.Buffer
 	if err := r.md.Convert(cleaned, &buf); err != nil {
 		return "", nil, fmt.Errorf("render markdown: %w", err)
 	}
 	result := injectHLLines(buf.String(), hlInfo)
 	result = injectLangLabels(result, langs)
-	return splitLineNumbers(result), extractTOC(buf.Bytes()), nil
+	result = splitLineNumbers(result)
+	result = r.reg.ReplacePlaceholders(result)
+	return result, extractTOC(buf.Bytes()), nil
 }
 
 // extractTOC scans HTML for h2/h3/h4 headings with id attributes.
