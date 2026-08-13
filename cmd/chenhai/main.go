@@ -1,7 +1,13 @@
 package main
 
-import "github.com/KurongTohsaka/chenhai-hugo/internal/cli"
+import (
+	"os"
+
+	"github.com/KurongTohsaka/chenhai-hugo/internal/cli"
+)
 
 func main() {
-	cli.Execute()
+	if err := cli.Execute(); err != nil {
+		os.Exit(1)
+	}
 }

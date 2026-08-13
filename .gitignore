@@ -39,8 +39,8 @@ testdata/example-blog/public/
 testdata/example-blog/static/
 
 # Build binary
-chenhai
-chenhai.exe
+/chenhai
+/chenhai.exe
 
 # Playwright artifacts
 .playwright-mcp/
