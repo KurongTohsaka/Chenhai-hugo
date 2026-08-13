@@ -1,6 +1,6 @@
 # Chenhai 规划文档
 
-当前版本：**v0.7.0**（构建性能 + 阅读体验 + 工具链）
+当前版本：**v0.8.0**（写作体验：贴图工作流 + Shortcode 组件 + RSS 订阅）
 
 测试站点：**https://hekurong.github.io**
 
@@ -159,6 +159,17 @@
 | E14 | 标签页 | 标签云排序 — 按名称/文章数 |
 | T1 | 工具 | chenhai doctor — 站点健康检查命令 |
 
+### v0.8.0 — 写作体验（贴图工作流 + Shortcode 组件 + RSS 订阅）
+
+| 编号 | 类别 | 内容 |
+|------|------|------|
+| S1 | 贴图 | `chenhai image add` — WebP 压缩 + 自动命名 + md 引用输出（--post/--dir 双模式） |
+| S1 | 贴图 | `chenhai image compress` / `resize` 子命令 |
+| S2 | 组件 | Shortcode 系统 — Goldmark block parser + Registry + 主题覆盖接口（layouts/shortcodes/） |
+| S2 | 组件 | 内置组件 details / gallery / tabs（水墨样式 + tabs 切换 JS） |
+| S3 | 订阅 | RSS/Atom 订阅 — atom.xml 生成（统一摘要模式）+ rss 配置段 + doctor 检查 |
+| F1 | 修复 | CLI 退出码修复（错误路径 exit 1）+ .gitignore 二进制规则锚定 |
+
 ---
 
 ## 当前问题
@@ -169,15 +180,6 @@
 ---
 
 ## 版本规划
-
-### v0.8.0 — 图片体系
-
-| 编号 | 任务 | 说明 |
-|------|------|------|
-| I1 | WebP 自动转换 | 构建时 jpg/png → webp |
-| I2 | 响应式 srcset | 480w/800w/1200w 多尺寸变体 |
-| I3 | chenhai image | compress / convert / resize 子命令 |
-| I4 | 图片懒加载完善 | 首屏 eager、占位色 |
 
 ### v0.9.0 — 内容创作增强
 

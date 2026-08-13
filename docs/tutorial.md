@@ -17,6 +17,9 @@
   - [键盘快捷键](#键盘快捷键)
 - [9. 图床配置](#9-图床配置)
 - [10. Front Matter 参考](#10-front-matter-参考)
+- [11. 贴图工作流](#11-贴图工作流)
+- [12. Shortcode 组件](#12-shortcode-组件)
+- [13. RSS 订阅](#13-rss-订阅)
 
 ---
 
@@ -564,6 +567,116 @@ Front Matter > config.yaml > 内建默认值
 ```
 
 URL 生成优先级：`url` > `slug` > 文件路径
+
+---
+
+## 11. 贴图工作流
+
+写带图文章时，`chenhai image add` 帮你完成「压缩 → 归档 → 引用」全流程。
+
+```bash
+# 在站点根目录运行：压缩为 WebP 并拷入 static/img/<文章目录>/，输出 md 引用
+chenhai image add ~/Desktop/shot.png --post posts/CS224N/lesson_5.md
+# → static/img/CS224N/lesson_5/img1.webp
+# → ![](/img/CS224N/lesson_5/img1.webp)
+
+# 再跑一次自动递增：img2.webp、img3.webp……
+chenhai image add ~/Desktop/shot.png --post posts/CS224N/lesson_5.md
+
+# 指定目录（相对 static/）
+chenhai image add ~/Desktop/shot.png --dir img/gallery
+
+# 常用参数
+chenhai image add shot.png --post posts/x.md --quality 80   # WebP 质量 0-100
+chenhai image add shot.png --post posts/x.md --name fig1    # 指定文件名
+chenhai image add shot.png --post posts/x.md --force        # 覆盖已存在文件
+```
+
+其他子命令：
+
+```bash
+chenhai image compress static/img/xxx --quality 75   # 批量 jpg/png → WebP（保留原文件）
+chenhai image resize big.png --width 800             # 等比缩放（仅缩小），输出 big_w800.png
+```
+
+说明：
+
+- 自动命名规则：目录内 `imgN.webp` 取最大 N+1，不覆盖已有文件（`--force` 显式覆盖）
+- `--name` 指定扩展名会被强制替换为实际输出格式（防 WebP 数据写进 .jpg）
+- 必须且只能指定 `--post` 与 `--dir` 之一；须在站点根目录运行
+- GIF 原样拷贝不转码（保留动画）
+- 构建需 C 工具链（macOS CLT / Linux gcc），因 WebP 编码依赖 cgo libwebp
+
+---
+
+## 12. Shortcode 组件
+
+块级组件语法（Hugo 风格），v0.8 不支持嵌套：
+
+````markdown
+{{< details "答案" >}}
+折叠的**内容**，支持完整 Markdown
+{{< /details >}}
+
+{{< gallery >}}
+![图一](/img/a.png)
+![图二](/img/b.png)
+{{< /gallery >}}
+
+{{< tabs "Go" "Java" >}}
+=== Go ===
+```go
+fmt.Println("hi")
+```
+=== Java ===
+```java
+System.out.println("hi");
+```
+{{< /tabs >}}
+````
+
+- **details**：折叠块，`summary` 为第一个位置参数或 `title=` 参数
+- **gallery**：内容为若干图片引用行，渲染为响应式网格（复用懒加载）
+- **tabs**：`=== 标签名 ===` 分隔各面板，第一个默认激活
+- 未知组件名：原样透传（HTML 注释标记），便于发现拼写错误
+- 组件内部不可出现 `{{<` 开头的行（v0.8 无嵌套与转义支持）
+
+### 主题覆盖
+
+主题可在 `layouts/shortcodes/<名称>.html` 提供组件模板，命中即覆盖内置渲染：
+
+```html
+{{/* layouts/shortcodes/details.html */}}
+<div class="override-details">
+  <strong>{{index .Positional 0}}</strong>
+  {{.ContentHTML | safeHTML}}
+</div>
+```
+
+模板上下文：`.Params`（键值参数）、`.Positional`（位置参数）、`.Content`（原始 Markdown）、`.ContentHTML`（内层已渲染 HTML，需 `safeHTML` 输出）、`.Page`（预留，v0.8 为 nil）。
+
+---
+
+## 13. RSS 订阅
+
+构建时自动生成 `public/atom.xml`（Atom 1.0），无需额外配置——前提是设置了 `baseURL`：
+
+```yaml
+baseURL: "https://example.com"
+author:
+  name: "你的名字"        # feed 的 author 元素
+
+rss:
+  enabled: true          # 默认 true
+  limit: 20              # 最近 N 篇文章，默认 20，必须 ≥ 1
+```
+
+说明：
+
+- 未配置 `baseURL` 时跳过生成并提示（`chenhai doctor` 也会检查）
+- v0.8 统一输出摘要（front matter `description` 优先，无则正文截断 300 字）
+- `rss.enabled: false` 时全链路无 RSS 痕迹（不生成文件、页面不输出订阅链接）
+- 订阅地址：`https://你的域名/atom.xml`
 
 ---
 

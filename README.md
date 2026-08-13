@@ -16,6 +16,9 @@
 - **时间线归档** — 年月分组的折叠式归档页
 - **前端搜索** — JSON 索引 + Fuse.js 模糊匹配，Ctrl+K 唤起，搜索历史
 - **阅读体验** — 字体大小/阅读宽度/暗色亮度三级调节，打印样式，键盘导航，封面图与置顶
+- **Shortcode 组件** — details 折叠 / gallery 画廊 / tabs 标签页，主题可覆盖（`layouts/shortcodes/`）
+- **RSS/Atom 订阅** — atom.xml 自动生成（统一摘要模式），`rss:` 配置段
+- **贴图工作流** — `chenhai image add`：截图一键 WebP 压缩入 `static/img/` 并输出 md 引用
 - **外部主题** — `themes/` 目录加载，缺模板自动回退镇海
 - **增量构建** — SHA256 缓存，只重建变更页面
 - **GitHub 图床** — auto 上传 + map 映射双模式
@@ -47,6 +50,9 @@ chenhai serve    # → http://localhost:1313
 | `chenhai build` | 构建站点 → `public/` |
 | `chenhai deploy -m "msg"` | 推送源码（CI 自动构建部署） |
 | `chenhai doctor` | 站点健康检查 |
+| `chenhai image add <file>` | 贴图：WebP 压缩入 `static/img/` 并输出 md 引用（`--post`/`--dir`） |
+| `chenhai image compress <file\|dir>` | 批量压缩 jpg/png → WebP |
+| `chenhai image resize <file>` | 等比缩放（`--width`/`--height`） |
 | `chenhai new theme <name>` | 创建外部主题骨架 |
 | `chenhai clean` | 清空 `public/` |
 | `chenhai version` | 版本信息 |
@@ -75,6 +81,7 @@ my-blog/
 |---|---|
 | Markdown | Goldmark + highlighting + mathjax |
 | 代码高亮 | Chroma（CSS class 模式，亮暗双适配） |
+| 图片处理 | chai2010/webp（cgo libwebp）+ golang.org/x/image |
 | 模板 | Go `html/template` |
 | CLI | `spf13/cobra` |
 | 文件监听 | `fsnotify` |
@@ -82,7 +89,7 @@ my-blog/
 
 ## 版本
 
-当前 **v0.7.0**。详见 [规划文档](docs/planning.md)。
+当前 **v0.8.0**。详见 [规划文档](docs/planning.md)。
 
 ## 文档
 
