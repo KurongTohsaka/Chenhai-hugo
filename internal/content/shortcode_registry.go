@@ -95,7 +95,7 @@ func (r *ShortcodeRegistry) Render(name, rawParams, content string, inner goldma
 	if inner != nil {
 		var buf strings.Builder
 		if err := inner.Convert([]byte(content), &buf); err == nil {
-			innerHTML = buf.String()
+			innerHTML = injectInnerCodeLanguages(buf.String(), content)
 		} else {
 			innerHTML = "<p>" + html.EscapeString(content) + "</p>"
 		}
@@ -141,6 +141,43 @@ func (r *ShortcodeRegistry) Render(name, rawParams, content string, inner goldma
 		return "", true // fn error: swallow, fall back to pass-through below
 	}
 	return out, true
+}
+
+// renderInnerHTML renders a markdown fragment with the inner instance
+// (no shortcode recursion). Inner code blocks get language-<lang> classes
+// (the top-level injectLangLabels deliberately skips placeholder content,
+// so shortcode-internal blocks would otherwise lose their language marker).
+func (r *ShortcodeRegistry) renderInnerHTML(md string) string {
+	var buf strings.Builder
+	if err := r.innerMD.Convert([]byte(md), &buf); err != nil {
+		return "<p>" + html.EscapeString(md) + "</p>"
+	}
+	return injectInnerCodeLanguages(buf.String(), md)
+}
+
+// innerChromaBlockRe matches a chroma code block produced by goldmark-highlighting.
+var innerChromaBlockRe = regexp.MustCompile(`<pre[^>]*class="chroma"[^>]*><code>([\s\S]*?)</code></pre>`)
+
+// injectInnerCodeLanguages adds language-<lang> classes to <code> elements of
+// chroma blocks, in source order, mirroring injectLangLabels for top-level
+// blocks. Fenced code languages come from extractLangs on the markdown source.
+func injectInnerCodeLanguages(htmlOut, mdSrc string) string {
+	langs := extractLangs([]byte(mdSrc))
+	if len(langs) == 0 {
+		return htmlOut
+	}
+	idx := 0
+	return innerChromaBlockRe.ReplaceAllStringFunc(htmlOut, func(block string) string {
+		lang := ""
+		if idx < len(langs) {
+			lang = langs[idx]
+		}
+		idx++
+		if lang == "" {
+			return block
+		}
+		return strings.Replace(block, "<code>", `<code class="language-`+lang+`">`, 1)
+	})
 }
 
 var paramTokenRe = regexp.MustCompile(`([a-zA-Z][a-zA-Z0-9-]*)\s*=\s*"([^"]*)"|([a-zA-Z][a-zA-Z0-9-]*)\s*=\s*([^\s"]+)|("[^"]*"|[^\s"]+)`)

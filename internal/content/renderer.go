@@ -50,6 +50,7 @@ func NewRenderer(style string, lineNumbers bool) *Renderer {
 	)
 
 	reg := NewShortcodeRegistry(innerMD)
+	RegisterBuiltins(reg) // 内置组件 details/gallery/tabs（Task 5）
 	// goldmark v1.8.2 的 Markdown 接口无 AddOptions——shortcode 扩展随主实例
 	// 构造时一并注册。
 	mdExts := make([]goldmark.Extender, 0, len(exts)+1)
