@@ -41,13 +41,18 @@ func ExecuteDoctor(root string) error {
 		errors++
 	} else {
 		// 1b. Check config.yaml syntax
-		_, err := config.Load(configPath)
+		cfg, err := config.Load(configPath)
 		if err != nil {
 			fmt.Printf("✗ config.yaml 解析失败：%v\n", err)
 			fmt.Println()
 			errors++
 		} else {
 			fmt.Println("✓ config.yaml 语法正确")
+			// baseURL 检查：缺失则 RSS 不会生成（Y11：仅 config 加载成功时执行，防 nil 解引用）
+			if cfg.BaseURL == "" {
+				fmt.Println("⚠ config.yaml 未配置 baseURL，RSS 订阅将不会生成")
+				warnings++
+			}
 		}
 	}
 

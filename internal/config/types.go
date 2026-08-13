@@ -14,6 +14,7 @@ type Config struct {
 	Markup      Markup          `yaml:"markup"`
 	Social      Social          `yaml:"social"`
 	SEO         SEO             `yaml:"seo"`
+	RSS         RSSConfig       `yaml:"rss"`
 	ImageHost       ImageHostConfig     `yaml:"imageHost"`
 	TagDescriptions map[string]string  `yaml:"tagDescriptions"`
 }
@@ -72,6 +73,11 @@ type SEO struct {
 	EnableSitemap   bool   `yaml:"enableSitemap"`
 }
 
+type RSSConfig struct {
+	Enabled bool `yaml:"enabled"`
+	Limit   int  `yaml:"limit"`
+}
+
 type ImageHostConfig struct {
 	Enabled  bool   `yaml:"enabled"`
 	Provider string `yaml:"provider"`
@@ -99,6 +105,7 @@ func DefaultConfig() *Config {
 			TOC:       TOCConfig{MinDepth: 2, MaxDepth: 4},
 		},
 		SEO: SEO{EnableRobotsTXT: true, EnableSitemap: true},
+		RSS: RSSConfig{Enabled: true, Limit: 20},
 		ImageHost: ImageHostConfig{
 			Provider: "github",
 			Branch:   "main",
