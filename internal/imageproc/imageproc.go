@@ -144,6 +144,26 @@ func WriteFile(path string, data []byte) error {
 	return os.WriteFile(path, data, 0644)
 }
 
+// WriteFileExclusive writes data to path with O_EXCL atomic exclusive
+// creation: it fails (fs.ErrExist) if the file already exists. Used for
+// auto-naming under concurrent invocations so that racing writers cannot
+// silently overwrite each other.
+func WriteFileExclusive(path string, data []byte) error {
+	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+		return err
+	}
+	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0644)
+	if err != nil {
+		return err
+	}
+	_, werr := f.Write(data)
+	cerr := f.Close()
+	if werr != nil {
+		return werr
+	}
+	return cerr
+}
+
 // WriteImage encodes img to path in the format implied by ext (.jpg/.png/.webp).
 func WriteImage(path string, img image.Image, ext string) error {
 	var buf bytes.Buffer

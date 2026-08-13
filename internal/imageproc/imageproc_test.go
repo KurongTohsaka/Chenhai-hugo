@@ -1,9 +1,11 @@
 package imageproc
 
 import (
+	"errors"
 	"image"
 	"image/color"
 	"image/png"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"testing"
@@ -113,5 +115,21 @@ func TestNextImageName(t *testing.T) {
 	name, _ = NextImageName(dir, "webp")
 	if name != "img4.webp" {
 		t.Errorf("name = %q, want img4.webp (unrelated files ignored)", name)
+	}
+}
+
+// TestWriteFileExclusive verifies O_EXCL semantics: first create succeeds,
+// a second create of the same path fails with fs.ErrExist and leaves the
+// original content untouched.
+func TestWriteFileExclusive(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "sub", "img1.webp")
+	if err := WriteFileExclusive(path, []byte("a")); err != nil {
+		t.Fatalf("first create failed: %v", err)
+	}
+	if err := WriteFileExclusive(path, []byte("b")); err == nil || !errors.Is(err, fs.ErrExist) {
+		t.Fatalf("second create: err = %v, want fs.ErrExist", err)
+	}
+	if got, err := os.ReadFile(path); err != nil || string(got) != "a" {
+		t.Fatalf("existing content clobbered: %q, err = %v", got, err)
 	}
 }
