@@ -45,7 +45,7 @@ var deployCmd = &cobra.Command{
 
 		// git add source files only (not public/, not .chenhai-cache.json)
 		fmt.Println("→ git add")
-		addPaths := []string{"content", "static", "config.yaml", "archetypes", "themes"}
+		addPaths := []string{"content", "static", "config.yaml", "archetypes", "themes", "README.md"}
 		for _, p := range addPaths {
 			fullPath := filepath.Join(root, p)
 			if _, err := os.Stat(fullPath); err == nil {
