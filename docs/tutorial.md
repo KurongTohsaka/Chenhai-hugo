@@ -676,6 +676,7 @@ rss:
 - 未配置 `baseURL` 时跳过生成并提示（`chenhai doctor` 也会检查）
 - v0.8 统一输出摘要（front matter `description` 优先，无则正文截断 300 字）
 - `rss.enabled: false` 时全链路无 RSS 痕迹（不生成文件、页面不输出订阅链接）
+- 页面页脚自动显示 **RSS 订阅链接**（配置了 baseURL 且 rss.enabled 时）
 - 订阅地址：`https://你的域名/atom.xml`
 
 ---

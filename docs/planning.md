@@ -167,8 +167,9 @@
 | S1 | 贴图 | `chenhai image compress` / `resize` 子命令 |
 | S2 | 组件 | Shortcode 系统 — Goldmark block parser + Registry + 主题覆盖接口（layouts/shortcodes/） |
 | S2 | 组件 | 内置组件 details / gallery / tabs（水墨样式 + tabs 切换 JS） |
-| S3 | 订阅 | RSS/Atom 订阅 — atom.xml 生成（统一摘要模式）+ rss 配置段 + doctor 检查 |
+| S3 | 订阅 | RSS/Atom 订阅 — atom.xml 生成（统一摘要模式）+ rss 配置段 + doctor 检查 + **页脚订阅链接入口** |
 | F1 | 修复 | CLI 退出码修复（错误路径 exit 1）+ .gitignore 二进制规则锚定 |
+| F2 | 修复 | 并发 image add 自动命名 guard 拦截 O_EXCL 重试路径（CI#77 flaky 实证）+ deploy addPaths 补 README.md |
 
 ---
 

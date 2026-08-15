@@ -17,7 +17,7 @@
 - **前端搜索** — JSON 索引 + Fuse.js 模糊匹配，Ctrl+K 唤起，搜索历史
 - **阅读体验** — 字体大小/阅读宽度/暗色亮度三级调节，打印样式，键盘导航，封面图与置顶
 - **Shortcode 组件** — details 折叠 / gallery 画廊 / tabs 标签页，主题可覆盖（`layouts/shortcodes/`）
-- **RSS/Atom 订阅** — atom.xml 自动生成（统一摘要模式），`rss:` 配置段
+- **RSS/Atom 订阅** — atom.xml 自动生成（统一摘要模式），`rss:` 配置段，页脚订阅入口
 - **贴图工作流** — `chenhai image add`：截图一键 WebP 压缩入 `static/img/` 并输出 md 引用
 - **外部主题** — `themes/` 目录加载，缺模板自动回退镇海
 - **增量构建** — SHA256 缓存，只重建变更页面
