@@ -6,6 +6,9 @@
       {{if .Config.Author.Name}} by {{.Config.Author.Name}}{{end}}
     </div>
     <div class="footer-social">
+      {{if and .Config.BaseURL .Config.RSS.Enabled}}
+      <a href="{{.Config.BaseURL}}/atom.xml" rel="alternate" type="application/atom+xml" title="RSS 订阅">RSS</a>
+      {{end}}
       {{if .Config.Social.GitHub}}
       <a href="{{.Config.Social.GitHub}}" target="_blank" rel="noopener">GitHub</a>
       {{end}}
