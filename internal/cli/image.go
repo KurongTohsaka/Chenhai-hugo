@@ -295,10 +295,14 @@ func runImageAdd(src, post, dir, name string, quality int, force bool) error {
 
 	// 3.5 Overwrite guard: refuse to clobber an existing file unless --force.
 	// Quick-fail hint only; final consistency is guaranteed by O_EXCL below.
-	if _, err := os.Stat(outPath); err == nil && !force {
-		return fmt.Errorf("输出文件已存在（--force 覆盖）: %s", outPath)
-	} else if err != nil && !os.IsNotExist(err) {
-		return fmt.Errorf("检查输出文件: %w", err)
+	// 自动命名路径跳过 guard——并发窗口内两 goroutine 算出同名时，guard 会把
+	// 本应由 O_EXCL 循环重试递增的场景误报为错误（CI flaky 根因，2026-08-15）。
+	if !autoNamed {
+		if _, err := os.Stat(outPath); err == nil && !force {
+			return fmt.Errorf("输出文件已存在（--force 覆盖）: %s", outPath)
+		} else if err != nil && !os.IsNotExist(err) {
+			return fmt.Errorf("检查输出文件: %w", err)
+		}
 	}
 
 	// 4. Process: gif copy / transcode
