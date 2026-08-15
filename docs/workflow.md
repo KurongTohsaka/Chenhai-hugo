@@ -197,14 +197,25 @@ main push
 # 1. Typora 写文章
 open content/posts/DailyDev/新文章.md
 
-# 2. 本地预览（可选）
+# 2. 带图文章：截图一键转 WebP 并生成引用（v0.8.0+）
+chenhai image add ~/Desktop/shot.png --post posts/DailyDev/新文章.md
+# → 拷入 static/img/DailyDev/新文章/img1.webp
+# → 输出 ![](/img/DailyDev/新文章/img1.webp) 粘贴进文章
+
+# 3. 本地预览（可选）
 chenhai serve
 
-# 3. 确认无误，部署
+# 4. 确认无误，部署
 chenhai deploy -m "add: 新文章"
 ```
 
 推送后等待 1-2 分钟，https://hekurong.github.io 自动更新。
+
+## 7.1 写作可用扩展（v0.8.0+）
+
+- **贴图工作流**：`chenhai image add` 自动压缩（WebP）+ 归档 + 引用输出；`compress` 批量转换、`resize` 等比缩放。详见 [tutorial.md](tutorial.md) 第 11 章
+- **Shortcode 组件**：`{{< details "标题" >}}` 折叠块、`{{< gallery >}}` 图片画廊、`{{< tabs "A" "B" >}}` 标签页（`=== 名 ===` 分块）。详见 tutorial.md 第 12 章
+- **RSS 订阅**：站点已启用（baseURL + author 已配置），构建自动生成 atom.xml，订阅地址 https://hekurong.github.io/atom.xml
 
 ## 8. 常用操作
 
